@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { GuestSession } from './entities/guest-session.entity';
 import { User } from '../users/entities/user.entity';
 import { UserProfile } from '../users/entities/user-profile.entity';
+import { BodyMeasurement } from '../users/entities/body-measurement.entity';
 import { UserSettings } from '../settings/entities/user-settings.entity';
 import { UserCalorieTarget } from '../settings/entities/user-calorie-target.entity';
 import { DietPreference } from '../diet-preferences/entities/diet-preference.entity';
@@ -30,6 +31,8 @@ export class GuestService {
     private userRepository: Repository<User>,
     @InjectRepository(UserProfile)
     private userProfileRepository: Repository<UserProfile>,
+    @InjectRepository(BodyMeasurement)
+    private bodyMeasurementRepository: Repository<BodyMeasurement>,
     @InjectRepository(UserSettings)
     private settingsRepository: Repository<UserSettings>,
     @InjectRepository(UserCalorieTarget)
@@ -86,6 +89,18 @@ export class GuestService {
     });
 
     await this.userProfileRepository.save(profile);
+
+    // Create initial body measurement if provided
+    if (createGuestDto.height_cm || createGuestDto.current_weight_kg) {
+      const measurement = this.bodyMeasurementRepository.create({
+        user_id: user.id,
+        height_cm: createGuestDto.height_cm || null,
+        weight_kg: createGuestDto.current_weight_kg || null,
+        measured_at: new Date(),
+      });
+
+      await this.bodyMeasurementRepository.save(measurement);
+    }
 
     // Create settings with onboarding data
     const settings = this.settingsRepository.create({

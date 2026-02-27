@@ -7,6 +7,7 @@ import { GuestService } from './guest.service';
 import { GuestSession } from './entities/guest-session.entity';
 import { User } from '../users/entities/user.entity';
 import { UserProfile } from '../users/entities/user-profile.entity';
+import { BodyMeasurement } from '../users/entities/body-measurement.entity';
 import { UserSettings } from '../settings/entities/user-settings.entity';
 import { UserCalorieTarget } from '../settings/entities/user-calorie-target.entity';
 import { DietPreference } from '../diet-preferences/entities/diet-preference.entity';
@@ -17,6 +18,7 @@ import { DietPreference } from '../diet-preferences/entities/diet-preference.ent
       GuestSession,
       User,
       UserProfile,
+      BodyMeasurement,
       UserSettings,
       UserCalorieTarget,
       DietPreference,
