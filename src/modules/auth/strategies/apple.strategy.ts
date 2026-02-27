@@ -8,7 +8,7 @@ import * as fs from 'fs';
 export class AppleStrategy extends PassportStrategy(Strategy, 'apple') {
   constructor(private configService: ConfigService) {
     const keyPath = configService.get<string>('APPLE_PRIVATE_KEY_PATH');
-    const privateKey = fs.existsSync(keyPath)
+    const privateKey = keyPath && fs.existsSync(keyPath)
       ? fs.readFileSync(keyPath, 'utf8')
       : '';
 

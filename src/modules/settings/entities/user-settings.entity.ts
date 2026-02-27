@@ -35,6 +35,18 @@ export class UserSettings {
   @Column({ type: 'decimal', precision: 6, scale: 2, nullable: true })
   target_weight_kg: number | null;
 
+  @Column({ type: 'int', nullable: true })
+  target_calories: number | null;
+
+  @Column({ type: 'decimal', precision: 6, scale: 2, nullable: true })
+  target_protein_g: number | null;
+
+  @Column({ type: 'decimal', precision: 6, scale: 2, nullable: true })
+  target_carbs_g: number | null;
+
+  @Column({ type: 'decimal', precision: 6, scale: 2, nullable: true })
+  target_fats_g: number | null;
+
   @Column({ type: 'boolean', default: true })
   notifications_enabled: boolean;
 

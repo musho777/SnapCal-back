@@ -38,10 +38,12 @@ export class DishesController {
   @ApiQuery({ name: 'offset', required: false, type: Number })
   @ApiResponse({ status: 200, description: 'Dishes retrieved' })
   async findAll(
-    @Query('limit') limit?: number,
-    @Query('offset') offset?: number,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
   ) {
-    return this.dishesService.findAll(limit, offset);
+    const numLimit = limit ? parseInt(limit, 10) : undefined;
+    const numOffset = offset ? parseInt(offset, 10) : undefined;
+    return this.dishesService.findAll(numLimit, numOffset);
   }
 
   @Get('search')
@@ -49,8 +51,9 @@ export class DishesController {
   @ApiQuery({ name: 'q', type: String })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiResponse({ status: 200, description: 'Search results' })
-  async search(@Query('q') query: string, @Query('limit') limit?: number) {
-    return this.dishesService.searchDishes(query, limit);
+  async search(@Query('q') query: string, @Query('limit') limit?: string) {
+    const numLimit = limit ? parseInt(limit, 10) : undefined;
+    return this.dishesService.searchDishes(query, numLimit);
   }
 
   @Get('categories')

@@ -66,9 +66,10 @@ export class SettingsController {
   @ApiResponse({ status: 200, description: 'Targets retrieved' })
   async getCalorieTargets(
     @CurrentUser() user: User,
-    @Query('limit') limit?: number,
+    @Query('limit') limit?: string,
   ) {
-    return this.settingsService.getCalorieTargets(user.id, limit);
+    const numLimit = limit ? parseInt(limit, 10) : undefined;
+    return this.settingsService.getCalorieTargets(user.id, numLimit);
   }
 
   @Post('calorie-targets')

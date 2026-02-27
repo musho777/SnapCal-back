@@ -55,9 +55,10 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Measurements retrieved' })
   async getBodyMeasurements(
     @CurrentUser() user: User,
-    @Query('limit') limit?: number,
+    @Query('limit') limit?: string,
   ) {
-    return this.usersService.getBodyMeasurements(user.id, limit);
+    const numLimit = limit ? parseInt(limit, 10) : undefined;
+    return this.usersService.getBodyMeasurements(user.id, numLimit);
   }
 
   @Post('measurements')

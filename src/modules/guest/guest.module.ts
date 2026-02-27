@@ -8,6 +8,8 @@ import { GuestSession } from './entities/guest-session.entity';
 import { User } from '../users/entities/user.entity';
 import { UserProfile } from '../users/entities/user-profile.entity';
 import { UserSettings } from '../settings/entities/user-settings.entity';
+import { UserCalorieTarget } from '../settings/entities/user-calorie-target.entity';
+import { DietPreference } from '../diet-preferences/entities/diet-preference.entity';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { UserSettings } from '../settings/entities/user-settings.entity';
       User,
       UserProfile,
       UserSettings,
+      UserCalorieTarget,
+      DietPreference,
     ]),
     JwtModule.registerAsync({
       inject: [ConfigService],

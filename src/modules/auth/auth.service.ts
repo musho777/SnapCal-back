@@ -118,7 +118,7 @@ export class AuthService {
       relations: ['user'],
     });
 
-    let user: User;
+    let user: User | null = null;
 
     if (oauthAccount) {
       // Existing OAuth account
@@ -234,8 +234,14 @@ export class AuthService {
   }
 
   async validateUser(userId: string): Promise<User> {
-    return this.userRepository.findOne({
+    const user = await this.userRepository.findOne({
       where: { id: userId, is_active: true },
     });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return user;
   }
 }

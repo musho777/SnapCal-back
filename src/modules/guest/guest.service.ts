@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { Repository, LessThan } from 'typeorm';
+import { Repository, LessThan, IsNull } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,6 +14,8 @@ import { GuestSession } from './entities/guest-session.entity';
 import { User } from '../users/entities/user.entity';
 import { UserProfile } from '../users/entities/user-profile.entity';
 import { UserSettings } from '../settings/entities/user-settings.entity';
+import { UserCalorieTarget } from '../settings/entities/user-calorie-target.entity';
+import { DietPreference } from '../diet-preferences/entities/diet-preference.entity';
 import { CreateGuestSessionDto } from './dto/create-guest-session.dto';
 import { ConvertGuestDto } from './dto/convert-guest.dto';
 import { AuthProvider } from '@/common/enums';
@@ -30,6 +32,10 @@ export class GuestService {
     private userProfileRepository: Repository<UserProfile>,
     @InjectRepository(UserSettings)
     private settingsRepository: Repository<UserSettings>,
+    @InjectRepository(UserCalorieTarget)
+    private calorieTargetRepository: Repository<UserCalorieTarget>,
+    @InjectRepository(DietPreference)
+    private dietPreferenceRepository: Repository<DietPreference>,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
@@ -68,19 +74,62 @@ export class GuestService {
 
     await this.guestSessionRepository.save(session);
 
-    // Create user profile
+    // Create user profile with onboarding data
     const profile = this.userProfileRepository.create({
       user_id: user.id,
+      date_of_birth: createGuestDto.date_of_birth
+        ? new Date(createGuestDto.date_of_birth)
+        : null,
+      height_cm: createGuestDto.height_cm || null,
+      current_weight_kg: createGuestDto.current_weight_kg || null,
+      gender: createGuestDto.gender || null,
     });
 
     await this.userProfileRepository.save(profile);
 
-    // Create default settings
+    // Create settings with onboarding data
     const settings = this.settingsRepository.create({
       user_id: user.id,
+      goal: createGuestDto.goal,
+      activity_level: createGuestDto.activity_level,
+      target_weight_kg: createGuestDto.target_weight_kg || null,
+      target_calories: createGuestDto.target_calories || null,
+      target_protein_g: createGuestDto.target_protein_g || null,
+      target_carbs_g: createGuestDto.target_carbs_g || null,
+      target_fats_g: createGuestDto.target_fats_g || null,
+      measurement_system: createGuestDto.measurement_system || 'metric',
     });
 
     await this.settingsRepository.save(settings);
+
+    // Create initial calorie target snapshot if provided
+    if (createGuestDto.target_calories) {
+      const calorieTarget = this.calorieTargetRepository.create({
+        user_id: user.id,
+        target_date: new Date(),
+        target_calories: createGuestDto.target_calories,
+        target_protein_g: createGuestDto.target_protein_g || null,
+        target_carbs_g: createGuestDto.target_carbs_g || null,
+        target_fats_g: createGuestDto.target_fats_g || null,
+        notes: 'Initial onboarding targets',
+      });
+
+      await this.calorieTargetRepository.save(calorieTarget);
+    }
+
+    // Create diet preferences if provided
+    if (createGuestDto.preferences && createGuestDto.preferences.length > 0) {
+      const dietPreferences = createGuestDto.preferences.map((pref) =>
+        this.dietPreferenceRepository.create({
+          user_id: user.id,
+          preference_type: pref.preference_type,
+          preference_value: pref.preference_value,
+          is_active: true,
+        }),
+      );
+
+      await this.dietPreferenceRepository.save(dietPreferences);
+    }
 
     // Generate JWT for guest
     const payload: JwtPayload = {
@@ -165,7 +214,7 @@ export class GuestService {
 
     // Mark all guest sessions as converted
     await this.guestSessionRepository.update(
-      { converted_user_id: null },
+      { converted_user_id: IsNull() },
       { is_converted: true, converted_user_id: userId },
     );
 
