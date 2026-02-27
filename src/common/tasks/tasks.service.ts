@@ -1,28 +1,28 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { GuestService } from '../../modules/guest/guest.service';
+import { AuthService } from '../../modules/auth/auth.service';
 
 @Injectable()
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
-  constructor(private guestService: GuestService) {}
+  constructor(private authService: AuthService) {}
 
   /**
-   * Cleanup expired guest sessions
+   * Cleanup expired guest users
    * Runs daily at 2:00 AM
    */
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async cleanupExpiredGuestSessions() {
-    this.logger.log('Starting cleanup of expired guest sessions...');
+    this.logger.log('Starting cleanup of expired guest users...');
 
     try {
-      const deletedCount = await this.guestService.cleanupExpiredSessions();
+      const deactivatedCount = await this.authService.cleanupExpiredSessions();
       this.logger.log(
-        `Cleanup completed. Deleted ${deletedCount} expired guest sessions.`,
+        `Cleanup completed. Deactivated ${deactivatedCount} expired guest users (data preserved).`,
       );
     } catch (error) {
-      this.logger.error('Error during guest session cleanup:', error);
+      this.logger.error('Error during guest user cleanup:', error);
     }
   }
 

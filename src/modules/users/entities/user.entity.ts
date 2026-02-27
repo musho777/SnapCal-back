@@ -55,6 +55,29 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   last_login_at: Date | null;
 
+  // Guest session fields (nullable for registered users)
+  @Index()
+  @Column({ type: 'varchar', length: 255, unique: true, nullable: true })
+  guest_token: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  device_id: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  device_type: string | null;
+
+  @Column({ type: 'varchar', length: 45, nullable: true })
+  ip_address: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  user_agent: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  expires_at: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  last_activity_at: Date | null;
+
   // Relations
   @OneToOne(() => UserProfile, (profile) => profile.user, { cascade: true })
   profile: UserProfile;

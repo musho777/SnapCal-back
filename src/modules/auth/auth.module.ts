@@ -8,7 +8,12 @@ import { AuthService } from './auth.service';
 import { User } from '../users/entities/user.entity';
 import { UserProfile } from '../users/entities/user-profile.entity';
 import { UserOAuthAccount } from '../users/entities/user-oauth-account.entity';
+import { BodyMeasurement } from '../users/entities/body-measurement.entity';
 import { UserSettings } from '../settings/entities/user-settings.entity';
+import { UserCalorieTarget } from '../settings/entities/user-calorie-target.entity';
+import { DietPreference } from '../diet-preferences/entities/diet-preference.entity';
+import { EmailVerification } from './entities/email-verification.entity';
+import { EmailService } from './services/email.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { AppleStrategy } from './strategies/apple.strategy';
@@ -20,7 +25,11 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
       User,
       UserProfile,
       UserOAuthAccount,
+      BodyMeasurement,
       UserSettings,
+      UserCalorieTarget,
+      DietPreference,
+      EmailVerification,
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
@@ -36,6 +45,7 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
   controllers: [AuthController],
   providers: [
     AuthService,
+    EmailService,
     JwtStrategy,
     GoogleStrategy,
     AppleStrategy,

@@ -6,7 +6,6 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthModule } from "./modules/auth/auth.module";
 import { UsersModule } from "./modules/users/users.module";
-import { GuestModule } from "./modules/guest/guest.module";
 import { DishesModule } from "./modules/dishes/dishes.module";
 import { MealsModule } from "./modules/meals/meals.module";
 import { LogsModule } from "./modules/logs/logs.module";
@@ -37,7 +36,6 @@ import { TasksModule } from "./common/tasks/tasks.module";
     // Feature modules
     AuthModule,
     UsersModule,
-    GuestModule,
     DishesModule,
     MealsModule,
     LogsModule,

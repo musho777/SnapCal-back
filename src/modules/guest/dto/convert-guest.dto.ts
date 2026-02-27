@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsString, MinLength, IsOptional, IsUrl } from 'class-validator';
 
 export class ConvertGuestDto {
   @ApiProperty({ example: 'user@example.com' })
@@ -10,4 +10,19 @@ export class ConvertGuestDto {
   @IsString()
   @MinLength(8)
   password: string;
+
+  @ApiProperty({ example: 'John', required: false })
+  @IsOptional()
+  @IsString()
+  first_name?: string;
+
+  @ApiProperty({ example: 'Doe', required: false })
+  @IsOptional()
+  @IsString()
+  last_name?: string;
+
+  @ApiProperty({ example: 'https://example.com/avatar.jpg', required: false })
+  @IsOptional()
+  @IsUrl()
+  avatar_url?: string;
 }

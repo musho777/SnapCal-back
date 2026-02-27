@@ -18,6 +18,10 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { CreateGuestSessionDto } from '../guest/dto/create-guest-session.dto';
+import { ConvertGuestDto } from '../guest/dto/convert-guest.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { Request } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { AppleAuthGuard } from './guards/apple-auth.guard';
@@ -31,13 +35,52 @@ import { AuthProvider } from '@/common/enums';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
+  @Post('guest/session')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Register new user with email and password' })
-  @ApiResponse({ status: 201, description: 'User successfully registered' })
+  @ApiOperation({ summary: 'Start onboarding - Create your account' })
+  @ApiResponse({ status: 201, description: 'Account created successfully' })
+  async createGuestSession(
+    @Body() createGuestDto: CreateGuestSessionDto,
+    @Req() req: Request,
+  ) {
+    const ipAddress = req.ip;
+    const userAgent = req.get('user-agent');
+
+    return this.authService.createGuestSession(
+      createGuestDto,
+      ipAddress,
+      userAgent,
+    );
+  }
+
+  @Post('convert')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Register with email - Add email and password to your account',
+    description: 'Submit your email, password, name, and photo. A verification code will be sent to your email.'
+  })
+  @ApiResponse({ status: 200, description: 'Verification code sent to email' })
+  @ApiResponse({ status: 400, description: 'Invalid request' })
   @ApiResponse({ status: 409, description: 'Email already exists' })
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async convertGuest(
+    @CurrentUser() user: User,
+    @Body() convertDto: ConvertGuestDto,
+  ) {
+    return this.authService.convertGuestToUser(user.id, convertDto);
+  }
+
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Verify email - Complete registration',
+    description: 'Enter the verification code sent to your email to complete registration'
+  })
+  @ApiResponse({ status: 200, description: 'Email verified, registration completed successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired verification code' })
+  async verifyEmail(@Body() verifyDto: VerifyEmailDto) {
+    return this.authService.verifyEmail(verifyDto);
   }
 
   @Post('login')

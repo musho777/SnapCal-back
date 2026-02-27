@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { GuestModule } from '../../modules/guest/guest.module';
+import { AuthModule } from '../../modules/auth/auth.module';
 
 @Module({
-  imports: [GuestModule],
+  imports: [AuthModule],
   providers: [TasksService],
 })
 export class TasksModule {}

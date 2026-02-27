@@ -5,7 +5,6 @@ import { User } from "@modules/users/entities/user.entity";
 import { UserProfile } from "@modules/users/entities/user-profile.entity";
 import { UserOAuthAccount } from "@modules/users/entities/user-oauth-account.entity";
 import { BodyMeasurement } from "@modules/users/entities/body-measurement.entity";
-import { GuestSession } from "@modules/guest/entities/guest-session.entity";
 import { UserSettings } from "@modules/settings/entities/user-settings.entity";
 import { UserCalorieTarget } from "@modules/settings/entities/user-calorie-target.entity";
 import { UserDailyLog } from "@modules/logs/entities/user-daily-log.entity";
@@ -35,7 +34,6 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
         UserProfile,
         UserOAuthAccount,
         BodyMeasurement,
-        GuestSession,
         UserSettings,
         UserCalorieTarget,
         UserDailyLog,

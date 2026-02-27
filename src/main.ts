@@ -1,18 +1,18 @@
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { AppModule } from './app.module';
+import { NestFactory } from "@nestjs/core";
+import { ValidationPipe } from "@nestjs/common";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { AppModule } from "./app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Global prefix
-  const apiPrefix = process.env.API_PREFIX || 'api';
+  const apiPrefix = process.env.API_PREFIX || "api";
   app.setGlobalPrefix(apiPrefix);
 
   // CORS
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: process.env.CORS_ORIGIN || "*",
     credentials: true,
   });
 
@@ -30,19 +30,18 @@ async function bootstrap() {
 
   // Swagger documentation
   const config = new DocumentBuilder()
-    .setTitle('SnapCal API')
-    .setDescription('SnapCal backend API for nutrition tracking')
-    .setVersion('1.0')
+    .setTitle("SnapCal API")
+    .setDescription("SnapCal backend API for nutrition tracking")
+    .setVersion("1.0")
     .addBearerAuth()
-    .addTag('auth', 'Authentication endpoints')
-    .addTag('users', 'User management')
-    .addTag('guests', 'Guest sessions')
-    .addTag('dishes', 'Dish catalog')
-    .addTag('meals', 'Meal tracking')
-    .addTag('logs', 'Daily logs')
-    .addTag('settings', 'User settings')
-    .addTag('ratings', 'Dish ratings')
-    .addTag('diet-preferences', 'Dietary preferences')
+    .addTag("auth", "Authentication endpoints")
+    .addTag("users", "User management")
+    .addTag("dishes", "Dish catalog")
+    .addTag("meals", "Meal tracking")
+    .addTag("logs", "Daily logs")
+    .addTag("settings", "User settings")
+    .addTag("ratings", "Dish ratings")
+    .addTag("diet-preferences", "Dietary preferences")
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

@@ -25,9 +25,35 @@ export class InitialMigration1700000000000 implements MigrationInterface {
         "email_verified" boolean DEFAULT false,
         "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
         "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-        "last_login_at" timestamp
+        "last_login_at" timestamp,
+        "guest_token" varchar(255) UNIQUE,
+        "device_id" varchar(255),
+        "device_type" varchar(100),
+        "ip_address" varchar(45),
+        "user_agent" text,
+        "expires_at" timestamp,
+        "last_activity_at" timestamp
       );
       CREATE INDEX "idx_users_email" ON "users"("email");
+      CREATE INDEX "idx_users_guest_token" ON "users"("guest_token");
+    `);
+
+    // Email verifications table
+    await queryRunner.query(`
+      CREATE TABLE "email_verifications" (
+        "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+        "user_id" uuid NOT NULL,
+        "email" varchar(255) NOT NULL,
+        "verification_code" varchar(6) NOT NULL,
+        "expires_at" timestamp NOT NULL,
+        "is_verified" boolean DEFAULT false,
+        "verified_at" timestamp,
+        "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+        "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE
+      );
+      CREATE INDEX "idx_email_verifications_user_id" ON "email_verifications"("user_id");
+      CREATE INDEX "idx_email_verifications_email" ON "email_verifications"("email");
     `);
 
     // User profiles table
@@ -66,25 +92,6 @@ export class InitialMigration1700000000000 implements MigrationInterface {
         FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE,
         UNIQUE ("provider", "provider_user_id")
       );
-    `);
-
-    // Guest sessions table
-    await queryRunner.query(`
-      CREATE TABLE "guest_sessions" (
-        "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-        "guest_token" varchar(255) UNIQUE NOT NULL,
-        "device_id" varchar(255),
-        "device_type" varchar(100),
-        "ip_address" varchar(45),
-        "user_agent" text,
-        "expires_at" timestamp NOT NULL,
-        "is_converted" boolean DEFAULT false,
-        "converted_user_id" uuid,
-        "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-        "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-        "last_activity_at" timestamp
-      );
-      CREATE INDEX "idx_guest_sessions_token" ON "guest_sessions"("guest_token");
     `);
 
     // User settings table
@@ -324,7 +331,6 @@ export class InitialMigration1700000000000 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE IF EXISTS "body_measurements";`);
     await queryRunner.query(`DROP TABLE IF EXISTS "user_calorie_targets";`);
     await queryRunner.query(`DROP TABLE IF EXISTS "user_settings";`);
-    await queryRunner.query(`DROP TABLE IF EXISTS "guest_sessions";`);
     await queryRunner.query(`DROP TABLE IF EXISTS "user_oauth_accounts";`);
     await queryRunner.query(`DROP TABLE IF EXISTS "user_profiles";`);
     await queryRunner.query(`DROP TABLE IF EXISTS "users";`);
