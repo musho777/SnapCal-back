@@ -45,8 +45,30 @@ Following **Modular Clean Architecture** with these modules:
 - Node.js 18+
 - PostgreSQL 14+
 - npm or yarn
+- Docker & Docker Compose (optional, for containerized deployment)
 
 ### Installation
+
+#### Option 1: Docker (Recommended)
+
+```bash
+# Copy environment file
+cp .env.docker .env.production
+
+# Update .env.production with your settings
+
+# Start the application with Docker Compose
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# The API will be available at http://localhost:3000/api
+```
+
+See [DOCKER.md](DOCKER.md) for detailed Docker instructions.
+
+#### Option 2: Manual Installation
 
 ```bash
 # Install dependencies
@@ -79,11 +101,28 @@ npm run build
 npm run start:prod
 ```
 
-The API will be available at `http://localhost:3000/api/v1`
+The API will be available at `http://localhost:3000/api`
 
 ## API Documentation
 
 Swagger documentation is available at: `http://localhost:3000/api/docs`
+
+## Docker Deployment
+
+For containerized deployment with Docker:
+
+```bash
+# Quick start
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+For detailed Docker documentation, see [DOCKER.md](DOCKER.md)
 
 ## Database Schema
 
