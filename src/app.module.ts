@@ -34,7 +34,7 @@ import { TasksModule } from "./common/tasks/tasks.module";
     ScheduleModule.forRoot(),
 
     // Feature modules
-    AuthModule,
+    AuthModule.forRoot(),
     UsersModule,
     DishesModule,
     MealsModule,
