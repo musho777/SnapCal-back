@@ -1,7 +1,5 @@
 # Dependencies
 node_modules
-npm-debug.log
-yarn-error.log
 
 # Build output
 dist
@@ -30,9 +28,11 @@ build
 .DS_Store
 Thumbs.db
 
-# Logs
-logs
+# Log FILES only (NOT src/modules/logs directory!)
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Testing
 coverage
@@ -52,5 +52,5 @@ docker-compose*.yml
 .prettierrc
 .eslintrc.js
 .editorconfig
-# tsconfig.json is needed for build!
-# nest-cli.json is needed for build!
+
+# NOTE: tsconfig.json and nest-cli.json are INCLUDED (needed for build)
