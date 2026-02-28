@@ -22,6 +22,38 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
   constructor(private configService: ConfigService) {}
 
   createTypeOrmOptions(): TypeOrmModuleOptions {
+    // Check if DATABASE_URL exists (Railway, Heroku, etc.)
+    const databaseUrl = this.configService.get<string>("DATABASE_URL");
+
+    if (databaseUrl) {
+      // Parse DATABASE_URL for cloud deployments
+      return {
+        type: "postgres",
+        url: databaseUrl,
+        entities: [
+          User,
+          UserProfile,
+          UserOAuthAccount,
+          BodyMeasurement,
+          UserSettings,
+          UserCalorieTarget,
+          UserDailyLog,
+          Meal,
+          MealDish,
+          Dish,
+          DishCategory,
+          DishIngredient,
+          DishCookingStep,
+          DishRating,
+          DietPreference,
+        ],
+        synchronize: this.configService.get<boolean>("DB_SYNC") || false,
+        logging: this.configService.get<boolean>("DB_LOGGING") || false,
+        ssl: { rejectUnauthorized: false },
+      };
+    }
+
+    // Fall back to individual environment variables for local development
     return {
       type: "postgres",
       host: this.configService.get<string>("DB_HOST"),
