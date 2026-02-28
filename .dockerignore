@@ -52,5 +52,5 @@ docker-compose*.yml
 .prettierrc
 .eslintrc.js
 .editorconfig
-tsconfig*.json
-nest-cli.json
+# tsconfig.json is needed for build!
+# nest-cli.json is needed for build!
