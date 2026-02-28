@@ -26,6 +26,9 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
     const databaseUrl = this.configService.get<string>("DATABASE_URL");
 
     if (databaseUrl) {
+      // Log connection method (without exposing credentials)
+      console.log("📊 Database: Connecting using DATABASE_URL");
+
       // Parse DATABASE_URL for cloud deployments
       return {
         type: "postgres",
@@ -54,13 +57,19 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
     }
 
     // Fall back to individual environment variables for local development
+    const dbHost = this.configService.get<string>("DB_HOST");
+    const dbPort = this.configService.get<string>("DB_PORT") || "5432";
+    const dbName = this.configService.get<string>("DB_DATABASE");
+
+    console.log(`📊 Database: Connecting to ${dbHost}:${dbPort}/${dbName}`);
+
     return {
       type: "postgres",
-      host: this.configService.get<string>("DB_HOST"),
-      port: parseInt(this.configService.get<string>("DB_PORT") || "5432", 10),
+      host: dbHost,
+      port: parseInt(dbPort, 10),
       username: this.configService.get<string>("DB_USERNAME"),
       password: this.configService.get<string>("DB_PASSWORD"),
-      database: this.configService.get<string>("DB_DATABASE"),
+      database: dbName,
       entities: [
         User,
         UserProfile,
