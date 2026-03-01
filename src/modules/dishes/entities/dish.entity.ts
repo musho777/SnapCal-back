@@ -8,11 +8,13 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 import { DishCategory } from './dish-category.entity';
 import { DishIngredient } from './dish-ingredient.entity';
 import { DishCookingStep } from './dish-cooking-step.entity';
 import { MealDish } from '../../meals/entities/meal-dish.entity';
 import { DishRating } from '../../ratings/entities/dish-rating.entity';
+import { DietTag } from '../../../common/enums/diet-tag.enum';
 
 @Entity('dishes')
 export class Dish {
@@ -58,6 +60,10 @@ export class Dish {
 
   @Column({ type: 'decimal', precision: 6, scale: 2, nullable: true })
   sodium_mg: number | null;
+
+  @ApiProperty({ enum: DietTag, isArray: true, required: false })
+  @Column({ type: 'simple-array', nullable: true })
+  diet_tags: DietTag[] | null;
 
   @Column({ type: 'boolean', default: true })
   is_public: boolean;

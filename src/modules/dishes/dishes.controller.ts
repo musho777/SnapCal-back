@@ -175,6 +175,14 @@ export class DishesController {
           type: "number",
           example: 450,
         },
+        diet_tags: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: ["vegetarian", "vegan", "pescatarian", "keto", "paleo", "gluten-free", "dairy-free"],
+          },
+          example: ["vegetarian", "gluten-free"],
+        },
         is_public: {
           type: "boolean",
           example: true,
@@ -349,6 +357,14 @@ export class DishesController {
         sodium_mg: {
           type: "number",
           example: 450,
+        },
+        diet_tags: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: ["vegetarian", "vegan", "pescatarian", "keto", "paleo", "gluten-free", "dairy-free"],
+          },
+          example: ["vegetarian", "gluten-free"],
         },
         is_public: {
           type: "boolean",

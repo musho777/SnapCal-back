@@ -7,10 +7,12 @@ import {
   IsArray,
   Min,
   ValidateNested,
+  IsEnum,
 } from "class-validator";
 import { Type, Transform } from "class-transformer";
 import { CreateDishIngredientDto } from "./create-dish-ingredient.dto";
 import { CreateCookingStepDto } from "./create-cooking-step.dto";
+import { DietTag } from "../../../common/enums/diet-tag.enum";
 
 export class CreateDishDto {
   @ApiProperty()
@@ -82,6 +84,15 @@ export class CreateDishDto {
   @IsNumber()
   @Transform(({ value }) => (value ? Number(value) : undefined))
   sodium_mg?: number;
+
+  @ApiProperty({ required: false, enum: DietTag, isArray: true })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(DietTag, { each: true })
+  @Transform(({ value }) =>
+    typeof value === "string" ? value.split(",").map((v) => v.trim()) : value,
+  )
+  diet_tags?: DietTag[];
 
   @ApiProperty({ required: false })
   @IsOptional()
