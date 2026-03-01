@@ -262,6 +262,7 @@ export class DishesController {
   @Put(":id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   @UseInterceptors(
     FileInterceptor("image", {
       storage: require("multer").diskStorage({
@@ -284,24 +285,31 @@ export class DishesController {
   )
   @ApiConsumes("multipart/form-data")
   @ApiOperation({
-    summary: "Update complete dish with optional new image",
+    summary: "Update dish with image and complete data",
   })
   @ApiBody({
     schema: {
       type: "object",
+      required: [
+        "name",
+        "servings",
+        "calories",
+        "protein_g",
+        "carbs_g",
+        "fats_g",
+      ],
       properties: {
         image: {
           type: "string",
           format: "binary",
-          description: "OPTIONAL: New dish image file",
         },
         name: {
           type: "string",
-          example: "Updated Grilled Chicken Salad",
+          example: "Grilled Chicken Salad",
         },
         description: {
           type: "string",
-          example: "Updated description",
+          example: "Healthy grilled chicken with mixed greens",
         },
         prep_time_minutes: {
           type: "number",
@@ -317,19 +325,19 @@ export class DishesController {
         },
         calories: {
           type: "number",
-          example: 360,
+          example: 350,
         },
         protein_g: {
           type: "number",
-          example: 45,
+          example: 42,
         },
         carbs_g: {
           type: "number",
-          example: 20,
+          example: 18,
         },
         fats_g: {
           type: "number",
-          example: 13,
+          example: 12,
         },
         fiber_g: {
           type: "number",
@@ -352,7 +360,7 @@ export class DishesController {
           items: {
             type: "string",
           },
-          example: ["10000002-0000-4000-8000-000000000002"],
+          example: ["10000006-0000-4000-8000-000000000006"],
         },
         ingredients: {
           type: "array",
@@ -379,9 +387,10 @@ export class DishesController {
           example: [
             {
               name: "Chicken breast",
-              quantity: "250",
+              quantity: "200",
               unit: "g",
               sort_order: 1,
+              is_optional: false,
             },
           ],
         },
@@ -407,8 +416,8 @@ export class DishesController {
           example: [
             {
               step_number: 1,
-              instruction: "Season and grill chicken",
-              duration_minutes: 20,
+              instruction: "Season chicken breast with salt and pepper",
+              duration_minutes: 5,
             },
           ],
         },
