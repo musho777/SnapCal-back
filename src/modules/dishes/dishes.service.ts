@@ -9,6 +9,7 @@ import { Dish } from "./entities/dish.entity";
 import { DishCategory } from "./entities/dish-category.entity";
 import { DishIngredient } from "./entities/dish-ingredient.entity";
 import { DishCookingStep } from "./entities/dish-cooking-step.entity";
+import { DietTag } from "../diet-tags/entities/diet-tag.entity";
 import { CreateDishDto } from "./dto/create-dish.dto";
 import { UpdateDishDto } from "./dto/update-dish.dto";
 import { CreateDishCategoryDto } from "./dto/create-dish-category.dto";
@@ -24,12 +25,14 @@ export class DishesService {
     private ingredientRepository: Repository<DishIngredient>,
     @InjectRepository(DishCookingStep)
     private cookingStepRepository: Repository<DishCookingStep>,
+    @InjectRepository(DietTag)
+    private dietTagRepository: Repository<DietTag>,
   ) {}
 
   async findAll(limit: number = 50, offset: number = 0) {
     const [dishes, total] = await this.dishRepository.findAndCount({
       where: { is_active: true, is_public: true },
-      relations: ["categories"],
+      relations: ["categories", "diet_tags"],
       take: limit,
       skip: offset,
       order: { created_at: "DESC" },
@@ -46,7 +49,7 @@ export class DishesService {
   async findOne(id: string) {
     const dish = await this.dishRepository.findOne({
       where: { id, is_active: true },
-      relations: ["categories", "ingredients", "cooking_steps"],
+      relations: ["categories", "diet_tags", "ingredients", "cooking_steps"],
     });
 
     if (!dish) {
@@ -61,7 +64,7 @@ export class DishesService {
     createDto: CreateDishDto,
     image?: Express.Multer.File,
   ) {
-    const { category_ids, ingredients, cooking_steps, ...dishData } = createDto;
+    const { category_ids, diet_tag_ids, ingredients, cooking_steps, ...dishData } = createDto;
     const dish = this.dishRepository.create({
       ...dishData,
       created_by: userId,
@@ -76,6 +79,14 @@ export class DishesService {
         id: In(category_ids),
       });
       dish.categories = categories;
+    }
+
+    // Add diet tags if provided
+    if (diet_tag_ids && diet_tag_ids.length > 0) {
+      const dietTags = await this.dietTagRepository.findBy({
+        id: In(diet_tag_ids),
+      });
+      dish.diet_tags = dietTags;
     }
 
     await this.dishRepository.save(dish);
@@ -115,7 +126,7 @@ export class DishesService {
   ) {
     const dish = await this.dishRepository.findOne({
       where: { id },
-      relations: ["categories", "ingredients", "cooking_steps"],
+      relations: ["categories", "diet_tags", "ingredients", "cooking_steps"],
     });
 
     if (!dish) {
@@ -127,7 +138,7 @@ export class DishesService {
       throw new ForbiddenException("You can only update your own dishes");
     }
 
-    const { category_ids, ingredients, cooking_steps, ...dishData } = updateDto;
+    const { category_ids, diet_tag_ids, ingredients, cooking_steps, ...dishData } = updateDto;
 
     Object.assign(dish, dishData);
 
@@ -142,6 +153,14 @@ export class DishesService {
         id: In(category_ids),
       });
       dish.categories = categories;
+    }
+
+    // Update diet tags if provided
+    if (diet_tag_ids) {
+      const dietTags = await this.dietTagRepository.findBy({
+        id: In(diet_tag_ids),
+      });
+      dish.diet_tags = dietTags;
     }
 
     // Replace ingredients if provided
@@ -232,6 +251,7 @@ export class DishesService {
         query: `%${query}%`,
       })
       .leftJoinAndSelect("dish.categories", "categories")
+      .leftJoinAndSelect("dish.diet_tags", "diet_tags")
       .take(limit)
       .getMany();
 

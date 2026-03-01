@@ -8,11 +8,11 @@ import {
   Min,
   ValidateNested,
   IsEnum,
+  IsUUID,
 } from "class-validator";
 import { Type, Transform } from "class-transformer";
 import { CreateDishIngredientDto } from "./create-dish-ingredient.dto";
 import { CreateCookingStepDto } from "./create-cooking-step.dto";
-import { DietTag } from "../../../common/enums/diet-tag.enum";
 import { DishType } from "../../../common/enums/dish-type.enum";
 
 export class CreateDishDto {
@@ -86,14 +86,14 @@ export class CreateDishDto {
   @Transform(({ value }) => (value ? Number(value) : undefined))
   sodium_mg?: number;
 
-  @ApiProperty({ required: false, enum: DietTag, isArray: true })
+  @ApiProperty({ required: false, type: [String] })
   @IsOptional()
   @IsArray()
-  @IsEnum(DietTag, { each: true })
+  @IsUUID('4', { each: true })
   @Transform(({ value }) =>
     typeof value === "string" ? value.split(",").map((v) => v.trim()) : value,
   )
-  diet_tags?: DietTag[];
+  diet_tag_ids?: string[];
 
   @ApiProperty({ required: false, enum: DishType, isArray: true })
   @IsOptional()

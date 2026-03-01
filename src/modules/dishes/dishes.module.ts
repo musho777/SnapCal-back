@@ -6,6 +6,7 @@ import { Dish } from './entities/dish.entity';
 import { DishCategory } from './entities/dish-category.entity';
 import { DishIngredient } from './entities/dish-ingredient.entity';
 import { DishCookingStep } from './entities/dish-cooking-step.entity';
+import { DietTag } from '../diet-tags/entities/diet-tag.entity';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { DishCookingStep } from './entities/dish-cooking-step.entity';
       DishCategory,
       DishIngredient,
       DishCookingStep,
+      DietTag,
     ]),
   ],
   controllers: [DishesController],

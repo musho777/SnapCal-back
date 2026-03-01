@@ -11,7 +11,7 @@ import { UserOAuthAccount } from '../users/entities/user-oauth-account.entity';
 import { BodyMeasurement } from '../users/entities/body-measurement.entity';
 import { UserSettings } from '../settings/entities/user-settings.entity';
 import { UserCalorieTarget } from '../settings/entities/user-calorie-target.entity';
-import { DietPreference } from '../diet-preferences/entities/diet-preference.entity';
+import { DietTag } from '../diet-tags/entities/diet-tag.entity';
 import { EmailVerification } from './entities/email-verification.entity';
 import { EmailService } from './services/email.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -93,7 +93,7 @@ export class AuthModule {
           BodyMeasurement,
           UserSettings,
           UserCalorieTarget,
-          DietPreference,
+          DietTag,
           EmailVerification,
         ]),
         PassportModule.register({ defaultStrategy: 'jwt' }),

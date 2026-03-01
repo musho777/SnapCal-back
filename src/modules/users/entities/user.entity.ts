@@ -6,6 +6,8 @@ import {
   UpdateDateColumn,
   OneToOne,
   OneToMany,
+  ManyToMany,
+  JoinTable,
   Index,
 } from 'typeorm';
 import { AuthProvider } from '@/common/enums';
@@ -16,7 +18,7 @@ import { UserCalorieTarget } from '../../settings/entities/user-calorie-target.e
 import { UserDailyLog } from '../../logs/entities/user-daily-log.entity';
 import { BodyMeasurement } from '../../users/entities/body-measurement.entity';
 import { DishRating } from '../../ratings/entities/dish-rating.entity';
-import { DietPreference } from '../../diet-preferences/entities/diet-preference.entity';
+import { DietTag } from '../../diet-tags/entities/diet-tag.entity';
 
 @Entity('users')
 export class User {
@@ -100,6 +102,11 @@ export class User {
   @OneToMany(() => DishRating, (rating) => rating.user)
   ratings: DishRating[];
 
-  @OneToMany(() => DietPreference, (preference) => preference.user)
-  diet_preferences: DietPreference[];
+  @ManyToMany(() => DietTag, (dietTag) => dietTag.users)
+  @JoinTable({
+    name: 'user_diet_preferences',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'diet_tag_id', referencedColumnName: 'id' },
+  })
+  diet_preferences: DietTag[];
 }

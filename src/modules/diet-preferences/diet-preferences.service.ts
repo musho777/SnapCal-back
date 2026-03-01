@@ -1,46 +1,71 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { DietPreference } from "./entities/diet-preference.entity";
+import { Repository, In } from "typeorm";
+import { User } from "../users/entities/user.entity";
+import { DietTag } from "../diet-tags/entities/diet-tag.entity";
 import { CreateDietPreferenceDto } from "./dto/create-diet-preference.dto";
 
 @Injectable()
 export class DietPreferencesService {
   constructor(
-    @InjectRepository(DietPreference)
-    private preferenceRepository: Repository<DietPreference>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    @InjectRepository(DietTag)
+    private dietTagRepository: Repository<DietTag>,
   ) {}
 
   async getUserPreferences(userId: string) {
-    const preferences = await this.preferenceRepository.find({
-      where: { user_id: userId, is_active: true },
-      order: { created_at: "DESC" },
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['diet_preferences'],
     });
 
-    return preferences;
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    return user.diet_preferences;
   }
 
   async createPreference(userId: string, createDto: CreateDietPreferenceDto) {
-    const preference = this.preferenceRepository.create({
-      user_id: userId,
-      preference_type: createDto.preference_type,
-      preference_value: createDto.preference_value,
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['diet_preferences'],
     });
 
-    await this.preferenceRepository.save(preference);
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
 
-    return preference;
+    const dietTags = await this.dietTagRepository.find({
+      where: { id: In(createDto.diet_tag_ids) },
+    });
+
+    if (dietTags.length !== createDto.diet_tag_ids.length) {
+      throw new NotFoundException("One or more diet tags not found");
+    }
+
+    user.diet_preferences = dietTags;
+    await this.userRepository.save(user);
+
+    return dietTags;
   }
 
-  async deletePreference(userId: string, preferenceId: string) {
-    const result = await this.preferenceRepository.delete({
-      id: preferenceId,
-      user_id: userId,
+  async deletePreference(userId: string, dietTagId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['diet_preferences'],
     });
 
-    if (result.affected === 0) {
-      throw new NotFoundException("Preference not found");
+    if (!user) {
+      throw new NotFoundException("User not found");
     }
+
+    user.diet_preferences = user.diet_preferences.filter(
+      (tag) => tag.id !== dietTagId,
+    );
+
+    await this.userRepository.save(user);
 
     return { message: "Preference deleted successfully" };
   }

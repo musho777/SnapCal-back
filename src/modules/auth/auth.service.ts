@@ -17,7 +17,7 @@ import { UserOAuthAccount } from '../users/entities/user-oauth-account.entity';
 import { BodyMeasurement } from '../users/entities/body-measurement.entity';
 import { UserSettings } from '../settings/entities/user-settings.entity';
 import { UserCalorieTarget } from '../settings/entities/user-calorie-target.entity';
-import { DietPreference } from '../diet-preferences/entities/diet-preference.entity';
+import { DietTag } from '../diet-tags/entities/diet-tag.entity';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { CreateGuestSessionDto } from '../guest/dto/create-guest-session.dto';
@@ -44,8 +44,8 @@ export class AuthService {
     private settingsRepository: Repository<UserSettings>,
     @InjectRepository(UserCalorieTarget)
     private calorieTargetRepository: Repository<UserCalorieTarget>,
-    @InjectRepository(DietPreference)
-    private dietPreferenceRepository: Repository<DietPreference>,
+    @InjectRepository(DietTag)
+    private dietTagRepository: Repository<DietTag>,
     @InjectRepository(EmailVerification)
     private emailVerificationRepository: Repository<EmailVerification>,
     private jwtService: JwtService,
@@ -349,18 +349,16 @@ export class AuthService {
       await this.calorieTargetRepository.save(calorieTarget);
     }
 
-    // Create diet preferences if provided
-    if (createGuestDto.preferences && createGuestDto.preferences.length > 0) {
-      const dietPreferences = createGuestDto.preferences.map((pref) =>
-        this.dietPreferenceRepository.create({
-          user_id: user.id,
-          preference_type: pref.preference_type,
-          preference_value: pref.preference_value,
-          is_active: true,
-        }),
+    // Link diet tags if provided
+    if (createGuestDto.diet_tag_ids && createGuestDto.diet_tag_ids.length > 0) {
+      const dietTags = await this.dietTagRepository.findByIds(
+        createGuestDto.diet_tag_ids,
       );
 
-      await this.dietPreferenceRepository.save(dietPreferences);
+      if (dietTags.length > 0) {
+        user.diet_preferences = dietTags;
+        await this.userRepository.save(user);
+      }
     }
 
     // Generate JWT for guest

@@ -15,7 +15,8 @@ import { DishCategory } from "@modules/dishes/entities/dish-category.entity";
 import { DishIngredient } from "@modules/dishes/entities/dish-ingredient.entity";
 import { DishCookingStep } from "@modules/dishes/entities/dish-cooking-step.entity";
 import { DishRating } from "@modules/ratings/entities/dish-rating.entity";
-import { DietPreference } from "@modules/diet-preferences/entities/diet-preference.entity";
+import { DietTag } from "@modules/diet-tags/entities/diet-tag.entity";
+import { EmailVerification } from "@modules/auth/entities/email-verification.entity";
 
 @Injectable()
 export class DatabaseConfig implements TypeOrmOptionsFactory {
@@ -48,7 +49,8 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
           DishIngredient,
           DishCookingStep,
           DishRating,
-          DietPreference,
+          DietTag,
+          EmailVerification,
         ],
         synchronize: this.configService.get<boolean>("DB_SYNC") || false,
         logging: this.configService.get<boolean>("DB_LOGGING") || false,
@@ -85,7 +87,8 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
         DishIngredient,
         DishCookingStep,
         DishRating,
-        DietPreference,
+        DietTag,
+        EmailVerification,
       ],
       synchronize: this.configService.get<boolean>("DB_SYNC") || false,
       logging: this.configService.get<boolean>("DB_LOGGING") || false,

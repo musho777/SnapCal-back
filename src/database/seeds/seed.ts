@@ -18,6 +18,9 @@ async function seed() {
       'body_measurements',
       'user_calorie_targets',
       'user_settings',
+      'user_diet_preferences',
+      'dish_diet_tags',
+      'diet_tags',
       'diet_preferences',
       'dish_cooking_steps',
       'dish_ingredients',
@@ -56,6 +59,22 @@ async function seed() {
       ON CONFLICT (slug) DO NOTHING;
     `);
     console.log('Dish categories seeded successfully');
+
+    // Seed diet tags
+    console.log('Seeding diet tags...');
+    await dataSource.query(`
+      INSERT INTO diet_tags (id, name, description, is_active)
+      VALUES
+        ('20000001-0000-4000-8000-000000000001', 'vegetarian', 'No meat or fish', true),
+        ('20000002-0000-4000-8000-000000000002', 'vegan', 'No animal products', true),
+        ('20000003-0000-4000-8000-000000000003', 'pescatarian', 'Fish but no meat', true),
+        ('20000004-0000-4000-8000-000000000004', 'keto', 'Low carb, high fat', true),
+        ('20000005-0000-4000-8000-000000000005', 'paleo', 'Whole foods, no processed', true),
+        ('20000006-0000-4000-8000-000000000006', 'gluten-free', 'No gluten-containing grains', true),
+        ('20000007-0000-4000-8000-000000000007', 'dairy-free', 'No dairy products', true)
+      ON CONFLICT (name) DO NOTHING;
+    `);
+    console.log('Diet tags seeded successfully');
 
     // Seed users (password for all test users: "password123")
     console.log('Seeding users...');
@@ -264,18 +283,37 @@ async function seed() {
     `);
     console.log('Dish ratings seeded successfully');
 
-    // Seed diet preferences
-    console.log('Seeding diet preferences...');
+    // Seed user diet preferences (many-to-many with diet tags)
+    console.log('Seeding user diet preferences...');
     await dataSource.query(`
-      INSERT INTO diet_preferences (id, user_id, preference_type, preference_value)
+      INSERT INTO user_diet_preferences (user_id, diet_tag_id)
       VALUES
-        (uuid_generate_v4(), '00000002-0000-4000-8000-000000000002', 'dietary_restriction', 'vegetarian'),
-        (uuid_generate_v4(), '00000002-0000-4000-8000-000000000002', 'allergen', 'nuts'),
-        (uuid_generate_v4(), '00000004-0000-4000-8000-000000000004', 'dietary_restriction', 'gluten-free'),
-        (uuid_generate_v4(), '00000005-0000-4000-8000-000000000005', 'allergen', 'dairy'),
-        (uuid_generate_v4(), '00000005-0000-4000-8000-000000000005', 'dietary_restriction', 'vegan');
+        ('00000002-0000-4000-8000-000000000002', '20000001-0000-4000-8000-000000000001'),
+        ('00000004-0000-4000-8000-000000000004', '20000006-0000-4000-8000-000000000006'),
+        ('00000005-0000-4000-8000-000000000005', '20000002-0000-4000-8000-000000000002'),
+        ('00000005-0000-4000-8000-000000000005', '20000007-0000-4000-8000-000000000007');
     `);
-    console.log('Diet preferences seeded successfully');
+    console.log('User diet preferences seeded successfully');
+
+    // Seed dish diet tags
+    console.log('Seeding dish diet tags...');
+    await dataSource.query(`
+      INSERT INTO dish_diet_tags (dish_id, diet_tag_id)
+      VALUES
+        ('00000103-0000-4000-8000-000000000103', '20000001-0000-4000-8000-000000000001'),
+        ('00000104-0000-4000-8000-000000000104', '20000001-0000-4000-8000-000000000001'),
+        ('00000104-0000-4000-8000-000000000104', '20000002-0000-4000-8000-000000000002'),
+        ('00000105-0000-4000-8000-000000000105', '20000001-0000-4000-8000-000000000001'),
+        ('00000106-0000-4000-8000-000000000106', '20000003-0000-4000-8000-000000000003'),
+        ('00000106-0000-4000-8000-000000000106', '20000006-0000-4000-8000-000000000006'),
+        ('00000107-0000-4000-8000-000000000107', '20000001-0000-4000-8000-000000000001'),
+        ('00000107-0000-4000-8000-000000000107', '20000002-0000-4000-8000-000000000002'),
+        ('0000010a-0000-4000-8000-00000000010a', '20000001-0000-4000-8000-000000000001'),
+        ('0000010a-0000-4000-8000-00000000010a', '20000002-0000-4000-8000-000000000002'),
+        ('0000010d-0000-4000-8000-00000000010d', '20000001-0000-4000-8000-000000000001'),
+        ('0000010d-0000-4000-8000-00000000010d', '20000002-0000-4000-8000-000000000002');
+    `);
+    console.log('Dish diet tags seeded successfully');
 
     console.log('===========================================');
     console.log('All seeding completed successfully!');

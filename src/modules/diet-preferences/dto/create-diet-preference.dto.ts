@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsArray, IsUUID } from 'class-validator';
 
 export class CreateDietPreferenceDto {
-  @ApiProperty({ example: 'vegetarian' })
-  @IsString()
-  preference_type: string;
-
-  @ApiProperty({ example: 'strict' })
-  @IsString()
-  preference_value: string;
+  @ApiProperty({
+    example: ['uuid-1', 'uuid-2'],
+    description: 'Array of diet tag IDs',
+  })
+  @IsArray()
+  @IsUUID('4', { each: true })
+  diet_tag_ids: string[];
 }

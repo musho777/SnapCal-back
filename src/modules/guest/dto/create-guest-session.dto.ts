@@ -1,17 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsDateString, IsNumber, IsArray, ValidateNested, IsIn } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsOptional, IsEnum, IsDateString, IsNumber, IsArray, IsUUID, IsIn } from 'class-validator';
 import { Gender, Goal, ActivityLevel } from '@/common/enums';
-
-class DietPreferenceDto {
-  @ApiProperty({ description: 'Preference type (e.g., vegetarian, vegan, gluten-free, dairy-free, allergen)' })
-  @IsString()
-  preference_type: string;
-
-  @ApiProperty({ description: 'Preference value (e.g., yes, no, specific allergen name)' })
-  @IsString()
-  preference_value: string;
-}
 
 export class CreateGuestSessionDto {
   @ApiProperty({ required: false })
@@ -81,14 +70,13 @@ export class CreateGuestSessionDto {
 
   @ApiProperty({
     required: false,
-    type: [DietPreferenceDto],
-    description: 'Diet preferences (vegetarian, vegan, allergies, etc.)'
+    type: [String],
+    description: 'Array of diet tag IDs (vegetarian, vegan, gluten-free, etc.)'
   })
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => DietPreferenceDto)
-  preferences?: DietPreferenceDto[];
+  @IsUUID('4', { each: true })
+  diet_tag_ids?: string[];
 
   @ApiProperty({
     required: false,

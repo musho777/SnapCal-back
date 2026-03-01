@@ -14,7 +14,7 @@ import { DishIngredient } from './dish-ingredient.entity';
 import { DishCookingStep } from './dish-cooking-step.entity';
 import { MealDish } from '../../meals/entities/meal-dish.entity';
 import { DishRating } from '../../ratings/entities/dish-rating.entity';
-import { DietTag } from '../../../common/enums/diet-tag.enum';
+import { DietTag } from '../../diet-tags/entities/diet-tag.entity';
 import { DishType } from '../../../common/enums/dish-type.enum';
 
 @Entity('dishes')
@@ -62,10 +62,6 @@ export class Dish {
   @Column({ type: 'decimal', precision: 6, scale: 2, nullable: true })
   sodium_mg: number | null;
 
-  @ApiProperty({ enum: DietTag, isArray: true, required: false })
-  @Column({ type: 'simple-array', nullable: true })
-  diet_tags: DietTag[] | null;
-
   @ApiProperty({ enum: DishType, isArray: true, required: false })
   @Column({ type: 'simple-array', nullable: true })
   dish_type: DishType[] | null;
@@ -99,6 +95,14 @@ export class Dish {
     inverseJoinColumn: { name: 'category_id', referencedColumnName: 'id' },
   })
   categories: DishCategory[];
+
+  @ManyToMany(() => DietTag, (dietTag) => dietTag.dishes)
+  @JoinTable({
+    name: 'dish_diet_tags',
+    joinColumn: { name: 'dish_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'diet_tag_id', referencedColumnName: 'id' },
+  })
+  diet_tags: DietTag[];
 
   @OneToMany(() => DishIngredient, (ingredient) => ingredient.dish, {
     cascade: true,
