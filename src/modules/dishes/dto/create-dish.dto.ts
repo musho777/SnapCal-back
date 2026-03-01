@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsBoolean, IsArray, Min } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsBoolean, IsArray, Min, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { CreateDishIngredientDto } from './create-dish-ingredient.dto';
+import { CreateCookingStepDto } from './create-cooking-step.dto';
 
 export class CreateDishDto {
   @ApiProperty()
@@ -71,4 +74,18 @@ export class CreateDishDto {
   @IsOptional()
   @IsArray()
   category_ids?: string[];
+
+  @ApiProperty({ required: false, type: [CreateDishIngredientDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateDishIngredientDto)
+  ingredients?: CreateDishIngredientDto[];
+
+  @ApiProperty({ required: false, type: [CreateCookingStepDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateCookingStepDto)
+  cooking_steps?: CreateCookingStepDto[];
 }

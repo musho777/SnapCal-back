@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+# Uploaded files
+/uploads
+
 # Log FILES only (NOT src/modules/logs directory!)
 *.log
 npm-debug.log*
