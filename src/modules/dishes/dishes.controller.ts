@@ -115,7 +115,14 @@ export class DishesController {
   @ApiBody({
     schema: {
       type: "object",
-      required: ["name", "servings", "calories", "protein_g", "carbs_g", "fats_g"],
+      required: [
+        "name",
+        "servings",
+        "calories",
+        "protein_g",
+        "carbs_g",
+        "fats_g",
+      ],
       properties: {
         image: {
           type: "string",
@@ -202,7 +209,15 @@ export class DishesController {
               },
             },
           },
-          example: [{"name":"Chicken breast","quantity":"200","unit":"g","sort_order":1,"is_optional":false}],
+          example: [
+            {
+              name: "Chicken breast",
+              quantity: "200",
+              unit: "g",
+              sort_order: 1,
+              is_optional: false,
+            },
+          ],
         },
         cooking_steps: {
           type: "array",
@@ -223,7 +238,13 @@ export class DishesController {
               },
             },
           },
-          example: [{"step_number":1,"instruction":"Season chicken breast with salt and pepper","duration_minutes":5}],
+          example: [
+            {
+              step_number: 1,
+              instruction: "Season chicken breast with salt and pepper",
+              duration_minutes: 5,
+            },
+          ],
         },
       },
     },
@@ -234,6 +255,7 @@ export class DishesController {
     @Body() createDto: CreateDishDto,
     @UploadedFile() image?: Express.Multer.File,
   ) {
+    console.log(createDto, "createDtocreateDto");
     return this.dishesService.create(user.id, createDto, image);
   }
 
@@ -263,78 +285,6 @@ export class DishesController {
   @ApiConsumes("multipart/form-data")
   @ApiOperation({
     summary: "Update complete dish with optional new image",
-    description: `
-    Update a dish with optional new image. **WARNING:** Ingredients and cooking steps will be REPLACED if provided.
-
-    **How to use:**
-    1. Optionally upload a new image file
-    2. Provide updated dish data as a JSON string in the "data" field
-
-    **Example JSON for data field:**
-    \`\`\`json
-    {
-      "name": "Updated Grilled Chicken Salad",
-      "description": "Updated description",
-      "prep_time_minutes": 15,
-      "cook_time_minutes": 20,
-      "servings": 2,
-      "calories": 350,
-      "protein_g": 42,
-      "carbs_g": 18,
-      "fats_g": 12,
-      "fiber_g": 4,
-      "sugar_g": 6,
-      "sodium_mg": 450,
-      "is_public": true,
-      "category_ids": ["10000002-0000-4000-8000-000000000002"],
-      "ingredients": [
-        {
-          "name": "Chicken breast",
-          "quantity": "250",
-          "unit": "g",
-          "sort_order": 1,
-          "is_optional": false
-        }
-      ],
-      "cooking_steps": [
-        {
-          "step_number": 1,
-          "instruction": "Season chicken breast with herbs",
-          "duration_minutes": 5
-        },
-        {
-          "step_number": 2,
-          "instruction": "Grill chicken until cooked",
-          "duration_minutes": 15
-        }
-      ]
-    }
-    \`\`\`
-
-    **All fields are OPTIONAL for updates:**
-
-    **Basic fields:**
-    - name (string): Dish name
-    - description (string): Dish description
-    - servings (number): Number of servings
-    - calories (number): Calories per serving
-    - protein_g (number): Protein in grams
-    - carbs_g (number): Carbohydrates in grams
-    - fats_g (number): Fats in grams
-    - prep_time_minutes (number): Preparation time
-    - cook_time_minutes (number): Cooking time
-    - fiber_g (number): Fiber in grams
-    - sugar_g (number): Sugar in grams
-    - sodium_mg (number): Sodium in milligrams
-    - is_public (boolean): Make dish public
-    - category_ids (array of strings): Category UUIDs
-
-    **⚠️ WARNING - REPLACE Behavior:**
-    - ingredients (array): REPLACES all existing ingredients
-    - cooking_steps (array): REPLACES all existing cooking steps
-
-    If you don't provide ingredients or cooking_steps, existing ones remain unchanged.
-    `,
   })
   @ApiBody({
     schema: {
@@ -426,7 +376,14 @@ export class DishesController {
               },
             },
           },
-          example: [{"name":"Chicken breast","quantity":"250","unit":"g","sort_order":1}],
+          example: [
+            {
+              name: "Chicken breast",
+              quantity: "250",
+              unit: "g",
+              sort_order: 1,
+            },
+          ],
         },
         cooking_steps: {
           type: "array",
@@ -447,7 +404,13 @@ export class DishesController {
               },
             },
           },
-          example: [{"step_number":1,"instruction":"Season and grill chicken","duration_minutes":20}],
+          example: [
+            {
+              step_number: 1,
+              instruction: "Season and grill chicken",
+              duration_minutes: 20,
+            },
+          ],
         },
       },
     },

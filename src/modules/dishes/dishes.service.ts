@@ -61,7 +61,6 @@ export class DishesService {
     image?: Express.Multer.File,
   ) {
     const { category_ids, ingredients, cooking_steps, ...dishData } = createDto;
-
     const dish = this.dishRepository.create({
       ...dishData,
       created_by: userId,
