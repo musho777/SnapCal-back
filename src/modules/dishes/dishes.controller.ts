@@ -111,155 +111,141 @@ export class DishesController {
   @ApiConsumes("multipart/form-data")
   @ApiOperation({
     summary: "Create new dish with image and complete data",
-    description:
-      'NOTE: The "data" field below must be sent as a JSON STRING. Copy the example from the schema and stringify it.',
   })
   @ApiBody({
     schema: {
       type: "object",
-      required: ["data"],
+      required: [
+        "name",
+        "servings",
+        "calories",
+        "protein_g",
+        "carbs_g",
+        "fats_g",
+      ],
       properties: {
         image: {
           type: "string",
           format: "binary",
-          description:
-            "OPTIONAL: Dish image file (jpg, jpeg, png, gif, webp - max 5MB)",
         },
-        data: {
-          description:
-            "REQUIRED: JSON stringified object containing all dish data (stringify the object below)",
-          example:
-            '{"name":"Grilled Chicken Salad","description":"Healthy grilled chicken","prep_time_minutes":15,"cook_time_minutes":20,"servings":2,"calories":350,"protein_g":42,"carbs_g":18,"fats_g":12,"category_ids":["10000006-0000-4000-8000-000000000006","1000000a-0000-4000-8000-00000000000a"],"ingredients":[{"name":"Chicken breast","quantity":"200","unit":"g"}],"cooking_steps":[{"step_number":1,"instruction":"Grill chicken"}]}',
-          type: "object",
-          required: [
-            "name",
-            "servings",
-            "calories",
-            "protein_g",
-            "carbs_g",
-            "fats_g",
+        name: {
+          type: "string",
+          example: "Grilled Chicken Salad",
+          description: "Dish name",
+        },
+        description: {
+          type: "string",
+          example: "Healthy grilled chicken with mixed greens",
+        },
+        prep_time_minutes: {
+          type: "number",
+          example: 15,
+        },
+        cook_time_minutes: {
+          type: "number",
+          example: 20,
+        },
+        servings: {
+          type: "number",
+          example: 2,
+          minimum: 1,
+        },
+        calories: {
+          type: "number",
+          example: 350,
+        },
+        protein_g: {
+          type: "number",
+          example: 42,
+        },
+        carbs_g: {
+          type: "number",
+          example: 18,
+        },
+        fats_g: {
+          type: "number",
+          example: 12,
+        },
+        fiber_g: {
+          type: "number",
+          example: 4,
+        },
+        sugar_g: {
+          type: "number",
+          example: 6,
+        },
+        sodium_mg: {
+          type: "number",
+          example: 450,
+        },
+        is_public: {
+          type: "boolean",
+          example: true,
+        },
+        category_ids: {
+          type: "array",
+          items: {
+            type: "string",
+          },
+          example: [
+            "10000006-0000-4000-8000-000000000006",
+            "1000000a-0000-4000-8000-00000000000a",
           ],
-          properties: {
-            name: {
-              type: "string",
-              example: "Grilled Chicken Salad",
-              description: "Dish name",
-            },
-            description: {
-              type: "string",
-              example: "Healthy grilled chicken with mixed greens",
-            },
-            prep_time_minutes: {
-              type: "number",
-              example: 15,
-            },
-            cook_time_minutes: {
-              type: "number",
-              example: 20,
-            },
-            servings: {
-              type: "number",
-              example: 2,
-              minimum: 1,
-            },
-            calories: {
-              type: "number",
-              example: 350,
-            },
-            protein_g: {
-              type: "number",
-              example: 42,
-            },
-            carbs_g: {
-              type: "number",
-              example: 18,
-            },
-            fats_g: {
-              type: "number",
-              example: 12,
-            },
-            fiber_g: {
-              type: "number",
-              example: 4,
-            },
-            sugar_g: {
-              type: "number",
-              example: 6,
-            },
-            sodium_mg: {
-              type: "number",
-              example: 450,
-            },
-            is_public: {
-              type: "boolean",
-              example: true,
-            },
-            category_ids: {
-              type: "array",
-              items: {
+          description:
+            "Array of category UUIDs (e.g., Salads, Protein-Rich). Use GET /api/dishes/categories to see available categories.",
+        },
+        ingredients: {
+          type: "array",
+          description: "Array of ingredients",
+          items: {
+            type: "object",
+            required: ["name"],
+            properties: {
+              name: {
                 type: "string",
+                example: "Chicken breast",
               },
-              example: [
-                "10000006-0000-4000-8000-000000000006",
-                "1000000a-0000-4000-8000-00000000000a",
-              ],
-              description:
-                "Array of category UUIDs (e.g., Salads, Protein-Rich). Use GET /api/dishes/categories to see available categories.",
-            },
-            ingredients: {
-              type: "array",
-              description: "Array of ingredients",
-              items: {
-                type: "object",
-                required: ["name"],
-                properties: {
-                  name: {
-                    type: "string",
-                    example: "Chicken breast",
-                  },
-                  quantity: {
-                    type: "string",
-                    example: "200",
-                  },
-                  unit: {
-                    type: "string",
-                    example: "g",
-                  },
-                  sort_order: {
-                    type: "number",
-                    example: 1,
-                  },
-                  is_optional: {
-                    type: "boolean",
-                    example: false,
-                  },
-                },
+              quantity: {
+                type: "string",
+                example: "200",
+              },
+              unit: {
+                type: "string",
+                example: "g",
+              },
+              sort_order: {
+                type: "number",
+                example: 1,
+              },
+              is_optional: {
+                type: "boolean",
+                example: false,
               },
             },
-            cooking_steps: {
-              type: "array",
-              description: "Array of cooking steps",
-              items: {
-                type: "object",
-                required: ["step_number", "instruction"],
-                properties: {
-                  step_number: {
-                    type: "number",
-                    example: 1,
-                  },
-                  instruction: {
-                    type: "string",
-                    example: "Season chicken breast with salt and pepper",
-                  },
-                  duration_minutes: {
-                    type: "number",
-                    example: 5,
-                  },
-                  image_url: {
-                    type: "string",
-                    example: "https://example.com/step1.jpg",
-                  },
-                },
+          },
+        },
+        cooking_steps: {
+          type: "array",
+          description: "Array of cooking steps",
+          items: {
+            type: "object",
+            required: ["step_number", "instruction"],
+            properties: {
+              step_number: {
+                type: "number",
+                example: 1,
+              },
+              instruction: {
+                type: "string",
+                example: "Season chicken breast with salt and pepper",
+              },
+              duration_minutes: {
+                type: "number",
+                example: 5,
+              },
+              image_url: {
+                type: "string",
+                example: "https://example.com/step1.jpg",
               },
             },
           },
