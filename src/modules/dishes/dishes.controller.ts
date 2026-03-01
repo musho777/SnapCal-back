@@ -254,21 +254,13 @@ export class DishesController {
           type: "number",
           example: 450,
         },
-        diet_tags: {
+        diet_tag_ids: {
           type: "array",
           items: {
             type: "string",
-            enum: [
-              "vegetarian",
-              "vegan",
-              "pescatarian",
-              "keto",
-              "paleo",
-              "gluten-free",
-              "dairy-free",
-            ],
           },
-          example: ["vegetarian", "gluten-free"],
+          description: "Array of diet tag UUIDs (get available tags from GET /diet-tags)",
+          example: ["uuid-vegetarian-123", "uuid-gluten-free-456"],
         },
         dish_type: {
           type: "array",
@@ -460,21 +452,13 @@ export class DishesController {
           type: "number",
           example: 450,
         },
-        diet_tags: {
+        diet_tag_ids: {
           type: "array",
           items: {
             type: "string",
-            enum: [
-              "vegetarian",
-              "vegan",
-              "pescatarian",
-              "keto",
-              "paleo",
-              "gluten-free",
-              "dairy-free",
-            ],
           },
-          example: ["vegetarian", "gluten-free"],
+          description: "Array of diet tag UUIDs (get available tags from GET /diet-tags)",
+          example: ["uuid-vegetarian-123", "uuid-gluten-free-456"],
         },
         dish_type: {
           type: "array",

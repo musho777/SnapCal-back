@@ -86,7 +86,12 @@ export class CreateDishDto {
   @Transform(({ value }) => (value ? Number(value) : undefined))
   sodium_mg?: number;
 
-  @ApiProperty({ required: false, type: [String] })
+  @ApiProperty({
+    required: false,
+    type: [String],
+    description: 'Array of diet tag IDs (get available tags from GET /diet-tags)',
+    example: ['uuid-vegetarian-123', 'uuid-gluten-free-456'],
+  })
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
