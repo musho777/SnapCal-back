@@ -13,6 +13,7 @@ import { Type, Transform } from "class-transformer";
 import { CreateDishIngredientDto } from "./create-dish-ingredient.dto";
 import { CreateCookingStepDto } from "./create-cooking-step.dto";
 import { DietTag } from "../../../common/enums/diet-tag.enum";
+import { DishType } from "../../../common/enums/dish-type.enum";
 
 export class CreateDishDto {
   @ApiProperty()
@@ -93,6 +94,15 @@ export class CreateDishDto {
     typeof value === "string" ? value.split(",").map((v) => v.trim()) : value,
   )
   diet_tags?: DietTag[];
+
+  @ApiProperty({ required: false, enum: DishType, isArray: true })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(DishType, { each: true })
+  @Transform(({ value }) =>
+    typeof value === "string" ? value.split(",").map((v) => v.trim()) : value,
+  )
+  dish_type?: DishType[];
 
   @ApiProperty({ required: false })
   @IsOptional()

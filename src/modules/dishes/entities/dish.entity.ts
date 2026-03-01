@@ -15,6 +15,7 @@ import { DishCookingStep } from './dish-cooking-step.entity';
 import { MealDish } from '../../meals/entities/meal-dish.entity';
 import { DishRating } from '../../ratings/entities/dish-rating.entity';
 import { DietTag } from '../../../common/enums/diet-tag.enum';
+import { DishType } from '../../../common/enums/dish-type.enum';
 
 @Entity('dishes')
 export class Dish {
@@ -64,6 +65,10 @@ export class Dish {
   @ApiProperty({ enum: DietTag, isArray: true, required: false })
   @Column({ type: 'simple-array', nullable: true })
   diet_tags: DietTag[] | null;
+
+  @ApiProperty({ enum: DishType, isArray: true, required: false })
+  @Column({ type: 'simple-array', nullable: true })
+  dish_type: DishType[] | null;
 
   @Column({ type: 'boolean', default: true })
   is_public: boolean;

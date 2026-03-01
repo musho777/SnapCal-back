@@ -183,6 +183,14 @@ export class DishesController {
           },
           example: ["vegetarian", "gluten-free"],
         },
+        dish_type: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: ["breakfast", "lunch", "dinner", "snack", "dessert", "appetizer"],
+          },
+          example: ["breakfast", "lunch"],
+        },
         is_public: {
           type: "boolean",
           example: true,
@@ -365,6 +373,14 @@ export class DishesController {
             enum: ["vegetarian", "vegan", "pescatarian", "keto", "paleo", "gluten-free", "dairy-free"],
           },
           example: ["vegetarian", "gluten-free"],
+        },
+        dish_type: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: ["breakfast", "lunch", "dinner", "snack", "dessert", "appetizer"],
+          },
+          example: ["breakfast", "lunch"],
         },
         is_public: {
           type: "boolean",
