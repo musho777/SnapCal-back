@@ -11,7 +11,6 @@ import { MealsModule } from "./modules/meals/meals.module";
 import { LogsModule } from "./modules/logs/logs.module";
 import { SettingsModule } from "./modules/settings/settings.module";
 import { RatingsModule } from "./modules/ratings/ratings.module";
-import { DietPreferencesModule } from "./modules/diet-preferences/diet-preferences.module";
 import { DietTagsModule } from "./modules/diet-tags/diet-tags.module";
 import { DatabaseConfig } from "./config/database/database.config";
 import { TasksModule } from "./common/tasks/tasks.module";
@@ -42,7 +41,6 @@ import { TasksModule } from "./common/tasks/tasks.module";
     LogsModule,
     SettingsModule,
     RatingsModule,
-    DietPreferencesModule,
     DietTagsModule,
 
     // Background tasks

@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { UserProfile } from './entities/user-profile.entity';
 import { UserOAuthAccount } from './entities/user-oauth-account.entity';
 import { BodyMeasurement } from './entities/body-measurement.entity';
+import { DietTag } from '../diet-tags/entities/diet-tag.entity';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { BodyMeasurement } from './entities/body-measurement.entity';
       UserProfile,
       UserOAuthAccount,
       BodyMeasurement,
+      DietTag,
     ]),
   ],
   controllers: [UsersController],

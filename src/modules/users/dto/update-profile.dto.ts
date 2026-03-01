@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsDateString, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsDateString, IsNumber, IsArray, IsUUID } from 'class-validator';
 import { Gender } from '@/common/enums';
 
 export class UpdateProfileDto {
@@ -47,4 +47,14 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   timezone?: string;
+
+  @ApiProperty({
+    required: false,
+    type: [String],
+    description: 'Array of diet tag IDs (vegetarian, vegan, gluten-free, etc.)'
+  })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  diet_tag_ids?: string[];
 }

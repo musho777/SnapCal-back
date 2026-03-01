@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserProfile } from './entities/user-profile.entity';
 import { BodyMeasurement } from './entities/body-measurement.entity';
+import { DietTag } from '../diet-tags/entities/diet-tag.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateBodyMeasurementDto } from './dto/create-body-measurement.dto';
 
@@ -16,12 +17,14 @@ export class UsersService {
     private profileRepository: Repository<UserProfile>,
     @InjectRepository(BodyMeasurement)
     private measurementRepository: Repository<BodyMeasurement>,
+    @InjectRepository(DietTag)
+    private dietTagRepository: Repository<DietTag>,
   ) {}
 
   async getProfile(userId: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['profile', 'settings'],
+      relations: ['profile', 'settings', 'diet_preferences'],
     });
 
     if (!user) {
@@ -35,10 +38,14 @@ export class UsersService {
       auth_provider: user.auth_provider,
       profile: user.profile,
       settings: user.settings,
+      diet_preferences: user.diet_preferences,
     };
   }
 
   async updateProfile(userId: string, updateDto: UpdateProfileDto) {
+    const { diet_tag_ids, ...profileData } = updateDto;
+
+    // Update profile data
     let profile = await this.profileRepository.findOne({
       where: { user_id: userId },
     });
@@ -47,16 +54,41 @@ export class UsersService {
       // Create profile if it doesn't exist
       profile = this.profileRepository.create({
         user_id: userId,
-        ...updateDto,
+        ...profileData,
       });
     } else {
       // Update existing profile
-      Object.assign(profile, updateDto);
+      Object.assign(profile, profileData);
     }
 
     await this.profileRepository.save(profile);
 
-    return profile;
+    // Update diet preferences if provided
+    if (diet_tag_ids !== undefined) {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ['diet_preferences'],
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      if (diet_tag_ids.length > 0) {
+        const dietTags = await this.dietTagRepository.find({
+          where: { id: In(diet_tag_ids) },
+        });
+
+        user.diet_preferences = dietTags;
+      } else {
+        user.diet_preferences = [];
+      }
+
+      await this.userRepository.save(user);
+    }
+
+    // Return full profile with diet preferences
+    return this.getProfile(userId);
   }
 
   async getBodyMeasurements(userId: string, limit: number = 30) {
