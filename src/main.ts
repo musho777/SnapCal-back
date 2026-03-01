@@ -13,10 +13,6 @@ async function bootstrap() {
     prefix: "/uploads/",
   });
 
-  // Global prefix
-  const apiPrefix = process.env.API_PREFIX || "api";
-  app.setGlobalPrefix(apiPrefix);
-
   // CORS
   app.enableCors({
     origin: process.env.CORS_ORIGIN || "*",
@@ -52,14 +48,14 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(`${apiPrefix}/docs`, app, document);
+  SwaggerModule.setup(`api`, app, document);
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
   console.log(`
-    🚀 Application is running on: http://localhost:${port}/${apiPrefix}
-    📚 Swagger docs available at: http://localhost:${port}/${apiPrefix}/docs
+    🚀 Application is running on: http://localhost:${port}/
+    📚 Swagger docs available at: http://localhost:${port}/api
   `);
 }
 
