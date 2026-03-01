@@ -91,17 +91,9 @@ export class CreateDishDto {
   @ApiProperty({ required: false, type: [String] })
   @IsOptional()
   @IsArray()
-  @Transform(({ value }) => {
-    if (!value) return value;
-
-    if (Array.isArray(value)) return value;
-
-    try {
-      return JSON.parse(value);
-    } catch {
-      return [];
-    }
-  })
+  @Transform(({ value }) =>
+    typeof value === "string" ? value.split(",").map((v) => v.trim()) : value,
+  )
   category_ids?: string[];
 
   @ApiProperty({ required: false, type: [CreateDishIngredientDto] })
