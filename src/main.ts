@@ -44,7 +44,6 @@ async function bootstrap() {
     .addTag("logs", "Daily logs")
     .addTag("settings", "User settings")
     .addTag("ratings", "Dish ratings")
-    .addTag("diet-preferences", "Dietary preferences")
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
