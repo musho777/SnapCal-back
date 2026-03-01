@@ -11,6 +11,7 @@ import { DishIngredient } from "./entities/dish-ingredient.entity";
 import { DishCookingStep } from "./entities/dish-cooking-step.entity";
 import { CreateDishDto } from "./dto/create-dish.dto";
 import { UpdateDishDto } from "./dto/update-dish.dto";
+import { CreateDishCategoryDto } from "./dto/create-dish-category.dto";
 
 @Injectable()
 export class DishesService {
@@ -207,6 +208,19 @@ export class DishesService {
       where: { is_active: true },
       order: { sort_order: "ASC" },
     });
+  }
+
+  async createCategory(
+    createDto: CreateDishCategoryDto,
+    icon?: Express.Multer.File,
+  ) {
+    const category = this.categoryRepository.create({
+      ...createDto,
+      icon_url: icon
+        ? `/uploads/categories/${icon.filename}`
+        : createDto.icon_url,
+    });
+    return this.categoryRepository.save(category);
   }
 
   async searchDishes(query: string, limit: number = 20) {

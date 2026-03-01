@@ -30,6 +30,7 @@ import { CreateDishDto } from "./dto/create-dish.dto";
 import { UpdateDishDto } from "./dto/update-dish.dto";
 import { CreateDishIngredientDto } from "./dto/create-dish-ingredient.dto";
 import { CreateCookingStepDto } from "./dto/create-cooking-step.dto";
+import { CreateDishCategoryDto } from "./dto/create-dish-category.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CurrentUser } from "@/common/decorators";
 import { User } from "../users/entities/user.entity";
@@ -39,6 +40,7 @@ import { User } from "../users/entities/user.entity";
   CreateDishDto,
   CreateDishIngredientDto,
   CreateCookingStepDto,
+  CreateDishCategoryDto,
   UpdateDishDto,
 )
 @Controller("dishes")
@@ -47,7 +49,12 @@ export class DishesController {
 
   @Get()
   @ApiOperation({ summary: "Get all dishes or search dishes" })
-  @ApiQuery({ name: "q", required: false, type: String, description: "Search query for dish name or description" })
+  @ApiQuery({
+    name: "q",
+    required: false,
+    type: String,
+    description: "Search query for dish name or description",
+  })
   @ApiQuery({ name: "limit", required: false, type: Number })
   @ApiQuery({ name: "offset", required: false, type: Number })
   @ApiResponse({ status: 200, description: "Dishes retrieved" })
@@ -73,6 +80,78 @@ export class DishesController {
   @ApiResponse({ status: 200, description: "Categories retrieved" })
   async getCategories() {
     return this.dishesService.getCategories();
+  }
+
+  @Post("categories")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(
+    FileInterceptor("icon", {
+      storage: require("multer").diskStorage({
+        destination: "./uploads/categories",
+        filename: (req, file, callback) => {
+          const uniqueName = `${require("uuid").v4()}${require("path").extname(file.originalname)}`;
+          callback(null, uniqueName);
+        },
+      }),
+      fileFilter: (req, file, callback) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp|svg\+xml)$/)) {
+          return callback(new Error("Only image files are allowed"), false);
+        }
+        callback(null, true);
+      },
+      limits: {
+        fileSize: 2 * 1024 * 1024,
+      },
+    }),
+  )
+  @ApiConsumes("multipart/form-data")
+  @ApiOperation({ summary: "Create new category with icon" })
+  @ApiBody({
+    schema: {
+      type: "object",
+      required: ["name", "slug"],
+      properties: {
+        icon: {
+          type: "string",
+          format: "binary",
+          description: "Category icon image",
+        },
+        name: {
+          type: "string",
+          example: "Italian",
+        },
+        slug: {
+          type: "string",
+          example: "italian",
+        },
+        description: {
+          type: "string",
+          example: "Traditional Italian cuisine",
+        },
+        icon_url: {
+          type: "string",
+          example: "https://example.com/icons/italian.png",
+        },
+        sort_order: {
+          type: "number",
+          example: 11,
+        },
+        is_active: {
+          type: "boolean",
+          example: true,
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: "Category created successfully" })
+  @ApiResponse({ status: 400, description: "Invalid input" })
+  async createCategory(
+    @Body() createDto: CreateDishCategoryDto,
+    @UploadedFile() icon?: Express.Multer.File,
+  ) {
+    return this.dishesService.createCategory(createDto, icon);
   }
 
   @Get(":id")
@@ -179,7 +258,15 @@ export class DishesController {
           type: "array",
           items: {
             type: "string",
-            enum: ["vegetarian", "vegan", "pescatarian", "keto", "paleo", "gluten-free", "dairy-free"],
+            enum: [
+              "vegetarian",
+              "vegan",
+              "pescatarian",
+              "keto",
+              "paleo",
+              "gluten-free",
+              "dairy-free",
+            ],
           },
           example: ["vegetarian", "gluten-free"],
         },
@@ -187,7 +274,14 @@ export class DishesController {
           type: "array",
           items: {
             type: "string",
-            enum: ["breakfast", "lunch", "dinner", "snack", "dessert", "appetizer"],
+            enum: [
+              "breakfast",
+              "lunch",
+              "dinner",
+              "snack",
+              "dessert",
+              "appetizer",
+            ],
           },
           example: ["breakfast", "lunch"],
         },
@@ -370,7 +464,15 @@ export class DishesController {
           type: "array",
           items: {
             type: "string",
-            enum: ["vegetarian", "vegan", "pescatarian", "keto", "paleo", "gluten-free", "dairy-free"],
+            enum: [
+              "vegetarian",
+              "vegan",
+              "pescatarian",
+              "keto",
+              "paleo",
+              "gluten-free",
+              "dairy-free",
+            ],
           },
           example: ["vegetarian", "gluten-free"],
         },
@@ -378,7 +480,14 @@ export class DishesController {
           type: "array",
           items: {
             type: "string",
-            enum: ["breakfast", "lunch", "dinner", "snack", "dessert", "appetizer"],
+            enum: [
+              "breakfast",
+              "lunch",
+              "dinner",
+              "snack",
+              "dessert",
+              "appetizer",
+            ],
           },
           example: ["breakfast", "lunch"],
         },
