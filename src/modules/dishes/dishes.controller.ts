@@ -46,27 +46,26 @@ export class DishesController {
   constructor(private readonly dishesService: DishesService) {}
 
   @Get()
-  @ApiOperation({ summary: "Get all dishes" })
+  @ApiOperation({ summary: "Get all dishes or search dishes" })
+  @ApiQuery({ name: "q", required: false, type: String, description: "Search query for dish name or description" })
   @ApiQuery({ name: "limit", required: false, type: Number })
   @ApiQuery({ name: "offset", required: false, type: Number })
   @ApiResponse({ status: 200, description: "Dishes retrieved" })
   async findAll(
+    @Query("q") query?: string,
     @Query("limit") limit?: string,
     @Query("offset") offset?: string,
   ) {
     const numLimit = limit ? parseInt(limit, 10) : undefined;
     const numOffset = offset ? parseInt(offset, 10) : undefined;
-    return this.dishesService.findAll(numLimit, numOffset);
-  }
 
-  @Get("search")
-  @ApiOperation({ summary: "Search dishes" })
-  @ApiQuery({ name: "q", type: String })
-  @ApiQuery({ name: "limit", required: false, type: Number })
-  @ApiResponse({ status: 200, description: "Search results" })
-  async search(@Query("q") query: string, @Query("limit") limit?: string) {
-    const numLimit = limit ? parseInt(limit, 10) : undefined;
-    return this.dishesService.searchDishes(query, numLimit);
+    // If query parameter is provided, search dishes
+    if (query) {
+      return this.dishesService.searchDishes(query, numLimit);
+    }
+
+    // Otherwise, return all dishes with pagination
+    return this.dishesService.findAll(numLimit, numOffset);
   }
 
   @Get("categories")
