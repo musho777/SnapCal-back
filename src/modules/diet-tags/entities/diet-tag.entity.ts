@@ -20,6 +20,9 @@ export class DietTag {
   @Column({ type: 'varchar', length: 255, nullable: true })
   description: string | null;
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  icon_url: string | null;
+
   @Column({ type: 'boolean', default: true })
   is_active: boolean;
 

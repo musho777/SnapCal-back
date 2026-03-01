@@ -29,7 +29,7 @@ export class DietTagsService {
     return dietTag;
   }
 
-  async create(name: string, description?: string) {
+  async create(name: string, description?: string, icon_url?: string, icon?: Express.Multer.File) {
     const existing = await this.dietTagRepository.findOne({
       where: { name },
     });
@@ -41,12 +41,13 @@ export class DietTagsService {
     const dietTag = this.dietTagRepository.create({
       name,
       description,
+      icon_url: icon ? `/uploads/diet-tags/${icon.filename}` : icon_url,
     });
 
     return this.dietTagRepository.save(dietTag);
   }
 
-  async update(id: string, name?: string, description?: string) {
+  async update(id: string, name?: string, description?: string, icon_url?: string, icon?: Express.Multer.File) {
     const dietTag = await this.findOne(id);
 
     if (name) {
@@ -55,6 +56,12 @@ export class DietTagsService {
 
     if (description !== undefined) {
       dietTag.description = description;
+    }
+
+    if (icon) {
+      dietTag.icon_url = `/uploads/diet-tags/${icon.filename}`;
+    } else if (icon_url !== undefined) {
+      dietTag.icon_url = icon_url;
     }
 
     return this.dietTagRepository.save(dietTag);

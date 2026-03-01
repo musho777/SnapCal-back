@@ -63,15 +63,15 @@ async function seed() {
     // Seed diet tags
     console.log('Seeding diet tags...');
     await dataSource.query(`
-      INSERT INTO diet_tags (id, name, description, is_active)
+      INSERT INTO diet_tags (id, name, description, icon_url, is_active)
       VALUES
-        ('20000001-0000-4000-8000-000000000001', 'vegetarian', 'No meat or fish', true),
-        ('20000002-0000-4000-8000-000000000002', 'vegan', 'No animal products', true),
-        ('20000003-0000-4000-8000-000000000003', 'pescatarian', 'Fish but no meat', true),
-        ('20000004-0000-4000-8000-000000000004', 'keto', 'Low carb, high fat', true),
-        ('20000005-0000-4000-8000-000000000005', 'paleo', 'Whole foods, no processed', true),
-        ('20000006-0000-4000-8000-000000000006', 'gluten-free', 'No gluten-containing grains', true),
-        ('20000007-0000-4000-8000-000000000007', 'dairy-free', 'No dairy products', true)
+        ('20000001-0000-4000-8000-000000000001', 'vegetarian', 'No meat or fish', NULL, true),
+        ('20000002-0000-4000-8000-000000000002', 'vegan', 'No animal products', NULL, true),
+        ('20000003-0000-4000-8000-000000000003', 'pescatarian', 'Fish but no meat', NULL, true),
+        ('20000004-0000-4000-8000-000000000004', 'keto', 'Low carb, high fat', NULL, true),
+        ('20000005-0000-4000-8000-000000000005', 'paleo', 'Whole foods, no processed', NULL, true),
+        ('20000006-0000-4000-8000-000000000006', 'gluten-free', 'No gluten-containing grains', NULL, true),
+        ('20000007-0000-4000-8000-000000000007', 'dairy-free', 'No dairy products', NULL, true)
       ON CONFLICT (name) DO NOTHING;
     `);
     console.log('Diet tags seeded successfully');
