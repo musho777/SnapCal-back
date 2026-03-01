@@ -115,14 +115,7 @@ export class DishesController {
   @ApiBody({
     schema: {
       type: "object",
-      required: [
-        "name",
-        "servings",
-        "calories",
-        "protein_g",
-        "carbs_g",
-        "fats_g",
-      ],
+      required: ["name", "servings", "calories", "protein_g", "carbs_g", "fats_g"],
       properties: {
         image: {
           type: "string",
@@ -131,7 +124,6 @@ export class DishesController {
         name: {
           type: "string",
           example: "Grilled Chicken Salad",
-          description: "Dish name",
         },
         description: {
           type: "string",
@@ -148,7 +140,6 @@ export class DishesController {
         servings: {
           type: "number",
           example: 2,
-          minimum: 1,
         },
         calories: {
           type: "number",
@@ -187,68 +178,52 @@ export class DishesController {
           items: {
             type: "string",
           },
-          example: [
-            "10000006-0000-4000-8000-000000000006",
-            "1000000a-0000-4000-8000-00000000000a",
-          ],
-          description:
-            "Array of category UUIDs (e.g., Salads, Protein-Rich). Use GET /api/dishes/categories to see available categories.",
+          example: ["10000006-0000-4000-8000-000000000006"],
         },
         ingredients: {
           type: "array",
-          description: "Array of ingredients",
           items: {
             type: "object",
-            required: ["name"],
             properties: {
               name: {
                 type: "string",
-                example: "Chicken breast",
               },
               quantity: {
                 type: "string",
-                example: "200",
               },
               unit: {
                 type: "string",
-                example: "g",
               },
               sort_order: {
                 type: "number",
-                example: 1,
               },
               is_optional: {
                 type: "boolean",
-                example: false,
               },
             },
           },
+          example: [{"name":"Chicken breast","quantity":"200","unit":"g","sort_order":1,"is_optional":false}],
         },
         cooking_steps: {
           type: "array",
-          description: "Array of cooking steps",
           items: {
             type: "object",
-            required: ["step_number", "instruction"],
             properties: {
               step_number: {
                 type: "number",
-                example: 1,
               },
               instruction: {
                 type: "string",
-                example: "Season chicken breast with salt and pepper",
               },
               duration_minutes: {
                 type: "number",
-                example: 5,
               },
               image_url: {
                 type: "string",
-                example: "https://example.com/step1.jpg",
               },
             },
           },
+          example: [{"step_number":1,"instruction":"Season chicken breast with salt and pepper","duration_minutes":5}],
         },
       },
     },
@@ -256,10 +231,9 @@ export class DishesController {
   @ApiResponse({ status: 201, description: "Dish created successfully" })
   async create(
     @CurrentUser() user: User,
-    @Body("data") data: string,
+    @Body() createDto: CreateDishDto,
     @UploadedFile() image?: Express.Multer.File,
   ) {
-    const createDto: CreateDishDto = JSON.parse(data);
     return this.dishesService.create(user.id, createDto, image);
   }
 
@@ -365,20 +339,115 @@ export class DishesController {
   @ApiBody({
     schema: {
       type: "object",
-      required: ["data"],
       properties: {
         image: {
           type: "string",
           format: "binary",
-          description:
-            "OPTIONAL: New dish image file (jpg, jpeg, png, gif, webp - max 5MB)",
+          description: "OPTIONAL: New dish image file",
         },
-        data: {
+        name: {
           type: "string",
-          description:
-            "REQUIRED: JSON stringified object containing updated dish data",
-          default:
-            '{"name":"Updated Grilled Chicken Salad","description":"Updated description","servings":2,"calories":360,"protein_g":45,"carbs_g":20,"fats_g":13,"category_ids":["10000002-0000-4000-8000-000000000002"],"ingredients":[{"name":"Chicken breast","quantity":"250","unit":"g","sort_order":1}],"cooking_steps":[{"step_number":1,"instruction":"Season and grill chicken","duration_minutes":20}]}',
+          example: "Updated Grilled Chicken Salad",
+        },
+        description: {
+          type: "string",
+          example: "Updated description",
+        },
+        prep_time_minutes: {
+          type: "number",
+          example: 15,
+        },
+        cook_time_minutes: {
+          type: "number",
+          example: 20,
+        },
+        servings: {
+          type: "number",
+          example: 2,
+        },
+        calories: {
+          type: "number",
+          example: 360,
+        },
+        protein_g: {
+          type: "number",
+          example: 45,
+        },
+        carbs_g: {
+          type: "number",
+          example: 20,
+        },
+        fats_g: {
+          type: "number",
+          example: 13,
+        },
+        fiber_g: {
+          type: "number",
+          example: 4,
+        },
+        sugar_g: {
+          type: "number",
+          example: 6,
+        },
+        sodium_mg: {
+          type: "number",
+          example: 450,
+        },
+        is_public: {
+          type: "boolean",
+          example: true,
+        },
+        category_ids: {
+          type: "array",
+          items: {
+            type: "string",
+          },
+          example: ["10000002-0000-4000-8000-000000000002"],
+        },
+        ingredients: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              name: {
+                type: "string",
+              },
+              quantity: {
+                type: "string",
+              },
+              unit: {
+                type: "string",
+              },
+              sort_order: {
+                type: "number",
+              },
+              is_optional: {
+                type: "boolean",
+              },
+            },
+          },
+          example: [{"name":"Chicken breast","quantity":"250","unit":"g","sort_order":1}],
+        },
+        cooking_steps: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              step_number: {
+                type: "number",
+              },
+              instruction: {
+                type: "string",
+              },
+              duration_minutes: {
+                type: "number",
+              },
+              image_url: {
+                type: "string",
+              },
+            },
+          },
+          example: [{"step_number":1,"instruction":"Season and grill chicken","duration_minutes":20}],
         },
       },
     },
@@ -387,10 +456,9 @@ export class DishesController {
   async update(
     @Param("id") id: string,
     @CurrentUser() user: User,
-    @Body("data") data: string,
+    @Body() updateDto: UpdateDishDto,
     @UploadedFile() image?: Express.Multer.File,
   ) {
-    const updateDto: UpdateDishDto = JSON.parse(data);
     return this.dishesService.update(id, user.id, updateDto, image);
   }
 
