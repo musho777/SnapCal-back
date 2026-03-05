@@ -89,12 +89,13 @@ export class CreateDishDto {
   @ApiProperty({
     required: false,
     type: [String],
-    description: 'Array of diet tag IDs (get available tags from GET /diet-tags)',
-    example: ['uuid-vegetarian-123', 'uuid-gluten-free-456'],
+    description:
+      "Array of diet tag IDs (get available tags from GET /diet-tags)",
+    example: ["uuid-vegetarian-123", "uuid-gluten-free-456"],
   })
   @IsOptional()
   @IsArray()
-  @IsUUID('4', { each: true })
+  @IsUUID("4", { each: true })
   @Transform(({ value }) =>
     typeof value === "string" ? value.split(",").map((v) => v.trim()) : value,
   )
@@ -125,16 +126,15 @@ export class CreateDishDto {
   @ApiProperty({ required: false, type: [CreateDishIngredientDto] })
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
   @Type(() => CreateDishIngredientDto)
   @Transform(({ value }) => {
     if (!value) return value;
 
     if (Array.isArray(value)) return value;
-
     try {
       return JSON.parse(value);
     } catch {
+      console.log("Failed to parse ingredients JSON:", value);
       return [];
     }
   })
@@ -143,7 +143,6 @@ export class CreateDishDto {
   @ApiProperty({ required: false, type: [CreateCookingStepDto] })
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
   @Type(() => CreateCookingStepDto)
   @Transform(({ value }) => {
     if (!value) return value;

@@ -259,7 +259,8 @@ export class DishesController {
           items: {
             type: "string",
           },
-          description: "Array of diet tag UUIDs (get available tags from GET /diet-tags)",
+          description:
+            "Array of diet tag UUIDs (get available tags from GET /diet-tags)",
           example: ["uuid-vegetarian-123", "uuid-gluten-free-456"],
         },
         dish_type: {
@@ -356,7 +357,6 @@ export class DishesController {
     @Body() createDto: CreateDishDto,
     @UploadedFile() image?: Express.Multer.File,
   ) {
-    console.log(createDto, "createDtocreateDto");
     return this.dishesService.create(user.id, createDto, image);
   }
 
@@ -457,7 +457,8 @@ export class DishesController {
           items: {
             type: "string",
           },
-          description: "Array of diet tag UUIDs (get available tags from GET /diet-tags)",
+          description:
+            "Array of diet tag UUIDs (get available tags from GET /diet-tags)",
           example: ["uuid-vegetarian-123", "uuid-gluten-free-456"],
         },
         dish_type: {
