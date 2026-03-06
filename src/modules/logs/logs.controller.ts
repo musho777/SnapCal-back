@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Put,
+  Post,
+  Delete,
   Param,
   Query,
   Body,
@@ -73,5 +75,39 @@ export class LogsController {
     @Body() updateDto: UpdateDailyLogDto,
   ) {
     return this.logsService.updateDailyLog(user.id, date, updateDto);
+  }
+
+  @Post('daily/:date/burned-dishes/:dishId')
+  @ApiOperation({
+    summary: 'Add dish calories to calories_burned',
+    description: 'Adds a dish\'s calories to the daily log calories_burned field and tracks it'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Dish calories added to calories burned'
+  })
+  async addDishToCaloriesBurned(
+    @CurrentUser() user: User,
+    @Param('date') date: string,
+    @Param('dishId') dishId: string,
+  ) {
+    return this.logsService.addDishToCaloriesBurned(user.id, date, dishId);
+  }
+
+  @Delete('daily/:date/burned-dishes/:dishId')
+  @ApiOperation({
+    summary: 'Remove dish calories from calories_burned',
+    description: 'Removes a dish\'s calories from the daily log calories_burned field'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Dish calories removed from calories burned'
+  })
+  async removeDishFromCaloriesBurned(
+    @CurrentUser() user: User,
+    @Param('date') date: string,
+    @Param('dishId') dishId: string,
+  ) {
+    return this.logsService.removeDishFromCaloriesBurned(user.id, date, dishId);
   }
 }

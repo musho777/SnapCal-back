@@ -8,6 +8,7 @@ import { BodyMeasurement } from "@modules/users/entities/body-measurement.entity
 import { UserSettings } from "@modules/settings/entities/user-settings.entity";
 import { UserCalorieTarget } from "@modules/settings/entities/user-calorie-target.entity";
 import { UserDailyLog } from "@modules/logs/entities/user-daily-log.entity";
+import { BurnedDish } from "@modules/logs/entities/burned-dish.entity";
 import { Meal } from "@modules/meals/entities/meal.entity";
 import { MealDish } from "@modules/meals/entities/meal-dish.entity";
 import { Dish } from "@modules/dishes/entities/dish.entity";
@@ -42,6 +43,7 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
           UserSettings,
           UserCalorieTarget,
           UserDailyLog,
+          BurnedDish,
           Meal,
           MealDish,
           Dish,
@@ -80,6 +82,7 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
         UserSettings,
         UserCalorieTarget,
         UserDailyLog,
+        BurnedDish,
         Meal,
         MealDish,
         Dish,

@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserDailyLog } from './entities/user-daily-log.entity';
+import { BurnedDish } from './entities/burned-dish.entity';
+import { Dish } from '../dishes/entities/dish.entity';
 import { CreateDailyLogDto } from './dto/create-daily-log.dto';
 import { UpdateDailyLogDto } from './dto/update-daily-log.dto';
 
@@ -10,6 +12,10 @@ export class LogsService {
   constructor(
     @InjectRepository(UserDailyLog)
     private logRepository: Repository<UserDailyLog>,
+    @InjectRepository(BurnedDish)
+    private burnedDishRepository: Repository<BurnedDish>,
+    @InjectRepository(Dish)
+    private dishRepository: Repository<Dish>,
   ) {}
 
   async findOrCreateDailyLog(
@@ -42,6 +48,8 @@ export class LogsService {
       .leftJoinAndSelect('log.meals', 'meals')
       .leftJoinAndSelect('meals.meal_dishes', 'meal_dishes')
       .leftJoinAndSelect('meal_dishes.dish', 'dish')
+      .leftJoinAndSelect('log.burned_dishes', 'burned_dishes')
+      .leftJoinAndSelect('burned_dishes.dish', 'burned_dish_info')
       .where('log.user_id = :userId', { userId })
       .andWhere('log.log_date = :logDate', { logDate })
       .getOne();
@@ -93,6 +101,8 @@ export class LogsService {
       .leftJoinAndSelect('log.meals', 'meals')
       .leftJoinAndSelect('meals.meal_dishes', 'meal_dishes')
       .leftJoinAndSelect('meal_dishes.dish', 'dish')
+      .leftJoinAndSelect('log.burned_dishes', 'burned_dishes')
+      .leftJoinAndSelect('burned_dishes.dish', 'burned_dish_info')
       .where('log.user_id = :userId', { userId })
       .andWhere('log.log_date BETWEEN :startDate AND :endDate', {
         startDate: new Date(startDate),
@@ -193,5 +203,84 @@ export class LogsService {
     await this.logRepository.save(log);
 
     return log;
+  }
+
+  async addDishToCaloriesBurned(
+    userId: string,
+    date: string,
+    dishId: string,
+  ) {
+    const logDate = new Date(date);
+    const dailyLog = await this.findOrCreateDailyLog(userId, logDate);
+
+    // Check if this dish is already added for this date
+    const existingBurnedDish = await this.burnedDishRepository.findOne({
+      where: {
+        daily_log_id: dailyLog.id,
+        dish_id: dishId,
+      },
+    });
+
+    if (existingBurnedDish) {
+      return { message: 'Dish already added to calories burned', alreadyAdded: true };
+    }
+
+    // Get dish to get calories
+    const dish = await this.dishRepository.findOne({
+      where: { id: dishId },
+    });
+
+    if (!dish) {
+      throw new NotFoundException('Dish not found');
+    }
+
+    // Create burned dish record
+    const burnedDish = this.burnedDishRepository.create({
+      daily_log_id: dailyLog.id,
+      dish_id: dishId,
+      calories_burned: dish.calories,
+    });
+
+    await this.burnedDishRepository.save(burnedDish);
+
+    // Update daily log calories_burned
+    dailyLog.calories_burned = (dailyLog.calories_burned || 0) + dish.calories;
+    await this.logRepository.save(dailyLog);
+
+    return {
+      message: 'Dish calories added to calories burned',
+      burnedDish,
+      alreadyAdded: false
+    };
+  }
+
+  async removeDishFromCaloriesBurned(
+    userId: string,
+    date: string,
+    dishId: string,
+  ) {
+    const logDate = new Date(date);
+    const dailyLog = await this.findOrCreateDailyLog(userId, logDate);
+
+    // Find the burned dish record
+    const burnedDish = await this.burnedDishRepository.findOne({
+      where: {
+        daily_log_id: dailyLog.id,
+        dish_id: dishId,
+      },
+    });
+
+    if (!burnedDish) {
+      return { message: 'Dish not found in calories burned' };
+    }
+
+    // Update daily log calories_burned
+    dailyLog.calories_burned = Math.max(0, (dailyLog.calories_burned || 0) - burnedDish.calories_burned);
+    await this.logRepository.save(dailyLog);
+
+    // Remove the burned dish record
+    await this.burnedDishRepository.delete(burnedDish.id);
+
+    return { message: 'Dish calories removed from calories burned' };
   }
 }

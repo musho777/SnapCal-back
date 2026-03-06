@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Meal } from '../../meals/entities/meal.entity';
+import { BurnedDish } from './burned-dish.entity';
 
 @Entity('user_daily_logs')
 @Unique(['user_id', 'log_date'])
@@ -63,4 +64,7 @@ export class UserDailyLog {
 
   @OneToMany(() => Meal, (meal) => meal.daily_log, { cascade: true })
   meals: Meal[];
+
+  @OneToMany(() => BurnedDish, (burnedDish) => burnedDish.daily_log, { cascade: true })
+  burned_dishes: BurnedDish[];
 }

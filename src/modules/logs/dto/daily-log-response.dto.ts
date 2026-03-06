@@ -76,4 +76,24 @@ export class DailyLogResponseDto {
     required: false
   })
   meals?: any[];
+
+  @ApiProperty({
+    type: 'array',
+    description: 'List of dishes that contributed to calories_burned',
+    required: false,
+    example: [
+      {
+        id: 'uuid',
+        dish_id: 'uuid',
+        calories_burned: 500,
+        created_at: '2026-02-27T10:00:00Z',
+        dish: {
+          id: 'uuid',
+          name: 'Running',
+          calories: 500
+        }
+      }
+    ]
+  })
+  burned_dishes?: any[];
 }
