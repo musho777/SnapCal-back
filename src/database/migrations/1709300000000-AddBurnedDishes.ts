@@ -24,6 +24,11 @@ export class AddBurnedDishes1709300000000 implements MigrationInterface {
             isNullable: false,
           },
           {
+            name: 'meal_id',
+            type: 'uuid',
+            isNullable: false,
+          },
+          {
             name: 'calories_burned',
             type: 'int',
             isNullable: false,
@@ -60,14 +65,25 @@ export class AddBurnedDishes1709300000000 implements MigrationInterface {
       }),
     );
 
+    // Add foreign key for meal_id
+    await queryRunner.createForeignKey(
+      'burned_dishes',
+      new TableForeignKey({
+        columnNames: ['meal_id'],
+        referencedTableName: 'meals',
+        referencedColumnNames: ['id'],
+        onDelete: 'CASCADE',
+      }),
+    );
+
     // Add index for faster lookups
     await queryRunner.query(
-      `CREATE INDEX "IDX_burned_dishes_daily_log_dish" ON "burned_dishes" ("daily_log_id", "dish_id")`,
+      `CREATE INDEX "IDX_burned_dishes_daily_log_dish_meal" ON "burned_dishes" ("daily_log_id", "dish_id", "meal_id")`,
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_burned_dishes_daily_log_dish"`);
+    await queryRunner.query(`DROP INDEX "IDX_burned_dishes_daily_log_dish_meal"`);
     await queryRunner.dropTable('burned_dishes');
   }
 }

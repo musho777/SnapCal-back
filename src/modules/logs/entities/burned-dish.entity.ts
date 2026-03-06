@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { UserDailyLog } from './user-daily-log.entity';
 import { Dish } from '../../dishes/entities/dish.entity';
+import { Meal } from '../../meals/entities/meal.entity';
 
 @Entity('burned_dishes')
 export class BurnedDish {
@@ -19,6 +20,9 @@ export class BurnedDish {
 
   @Column({ type: 'uuid' })
   dish_id: string;
+
+  @Column({ type: 'uuid' })
+  meal_id: string;
 
   @Column({ type: 'int' })
   calories_burned: number;
@@ -34,4 +38,8 @@ export class BurnedDish {
   @ManyToOne(() => Dish)
   @JoinColumn({ name: 'dish_id' })
   dish: Dish;
+
+  @ManyToOne(() => Meal)
+  @JoinColumn({ name: 'meal_id' })
+  meal: Meal;
 }

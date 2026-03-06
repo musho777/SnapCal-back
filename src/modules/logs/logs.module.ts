@@ -5,9 +5,10 @@ import { LogsService } from './logs.service';
 import { UserDailyLog } from './entities/user-daily-log.entity';
 import { BurnedDish } from './entities/burned-dish.entity';
 import { Dish } from '../dishes/entities/dish.entity';
+import { Meal } from '../meals/entities/meal.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserDailyLog, BurnedDish, Dish])],
+  imports: [TypeOrmModule.forFeature([UserDailyLog, BurnedDish, Dish, Meal])],
   controllers: [LogsController],
   providers: [LogsService],
   exports: [LogsService],

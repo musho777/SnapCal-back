@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { UserDailyLog } from './entities/user-daily-log.entity';
 import { BurnedDish } from './entities/burned-dish.entity';
 import { Dish } from '../dishes/entities/dish.entity';
+import { Meal } from '../meals/entities/meal.entity';
 import { CreateDailyLogDto } from './dto/create-daily-log.dto';
 import { UpdateDailyLogDto } from './dto/update-daily-log.dto';
 
@@ -205,27 +206,41 @@ export class LogsService {
     return log;
   }
 
-  async addDishToCaloriesBurned(
+  async toggleDishInCaloriesBurned(
     userId: string,
     date: string,
     dishId: string,
+    mealId: string,
   ) {
     const logDate = new Date(date);
     const dailyLog = await this.findOrCreateDailyLog(userId, logDate);
 
-    // Check if this dish is already added for this date
+    // Check if this dish from this specific meal is already added
     const existingBurnedDish = await this.burnedDishRepository.findOne({
       where: {
         daily_log_id: dailyLog.id,
         dish_id: dishId,
+        meal_id: mealId,
       },
     });
 
+    // If already exists, REMOVE it
     if (existingBurnedDish) {
-      return { message: 'Dish already added to calories burned', alreadyAdded: true };
+      // Update daily log calories_burned
+      dailyLog.calories_burned = Math.max(0, (dailyLog.calories_burned || 0) - existingBurnedDish.calories_burned);
+      await this.logRepository.save(dailyLog);
+
+      // Remove the burned dish record
+      await this.burnedDishRepository.delete(existingBurnedDish.id);
+
+      return {
+        message: 'Dish calories removed from calories burned',
+        action: 'removed',
+        isAdded: false,
+      };
     }
 
-    // Get dish to get calories
+    // If not exists, ADD it
     const dish = await this.dishRepository.findOne({
       where: { id: dishId },
     });
@@ -238,6 +253,7 @@ export class LogsService {
     const burnedDish = this.burnedDishRepository.create({
       daily_log_id: dailyLog.id,
       dish_id: dishId,
+      meal_id: mealId,
       calories_burned: dish.calories,
     });
 
@@ -249,30 +265,32 @@ export class LogsService {
 
     return {
       message: 'Dish calories added to calories burned',
+      action: 'added',
+      isAdded: true,
       burnedDish,
-      alreadyAdded: false
     };
   }
 
   async removeDishFromCaloriesBurned(
     userId: string,
-    date: string,
-    dishId: string,
+    burnedDishId: string,
   ) {
-    const logDate = new Date(date);
-    const dailyLog = await this.findOrCreateDailyLog(userId, logDate);
-
-    // Find the burned dish record
+    // Find the burned dish record with its daily log
     const burnedDish = await this.burnedDishRepository.findOne({
-      where: {
-        daily_log_id: dailyLog.id,
-        dish_id: dishId,
-      },
+      where: { id: burnedDishId },
+      relations: ['daily_log'],
     });
 
     if (!burnedDish) {
-      return { message: 'Dish not found in calories burned' };
+      throw new NotFoundException('Burned dish record not found');
     }
+
+    // Verify ownership
+    if (burnedDish.daily_log.user_id !== userId) {
+      throw new NotFoundException('Burned dish record not found');
+    }
+
+    const dailyLog = burnedDish.daily_log;
 
     // Update daily log calories_burned
     dailyLog.calories_burned = Math.max(0, (dailyLog.calories_burned || 0) - burnedDish.calories_burned);
