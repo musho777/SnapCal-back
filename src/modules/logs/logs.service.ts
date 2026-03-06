@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository } from 'typeorm';
 import { UserDailyLog } from './entities/user-daily-log.entity';
 import { CreateDailyLogDto } from './dto/create-daily-log.dto';
 import { UpdateDailyLogDto } from './dto/update-daily-log.dto';
@@ -37,13 +37,14 @@ export class LogsService {
   async getDailyLog(userId: string, date: string) {
     const logDate = new Date(date);
 
-    const log = await this.logRepository.findOne({
-      where: {
-        user_id: userId,
-        log_date: logDate,
-      },
-      relations: ['meals', 'meals.meal_dishes', 'meals.meal_dishes.dish'],
-    });
+    const log = await this.logRepository
+      .createQueryBuilder('log')
+      .leftJoinAndSelect('log.meals', 'meals')
+      .leftJoinAndSelect('meals.meal_dishes', 'meal_dishes')
+      .leftJoinAndSelect('meal_dishes.dish', 'dish')
+      .where('log.user_id = :userId', { userId })
+      .andWhere('log.log_date = :logDate', { logDate })
+      .getOne();
 
     if (!log) {
       return null;
@@ -87,14 +88,18 @@ export class LogsService {
     startDate: string,
     endDate: string,
   ) {
-    const logs = await this.logRepository.find({
-      where: {
-        user_id: userId,
-        log_date: Between(new Date(startDate), new Date(endDate)),
-      },
-      relations: ['meals'],
-      order: { log_date: 'DESC' },
-    });
+    const logs = await this.logRepository
+      .createQueryBuilder('log')
+      .leftJoinAndSelect('log.meals', 'meals')
+      .leftJoinAndSelect('meals.meal_dishes', 'meal_dishes')
+      .leftJoinAndSelect('meal_dishes.dish', 'dish')
+      .where('log.user_id = :userId', { userId })
+      .andWhere('log.log_date BETWEEN :startDate AND :endDate', {
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+      })
+      .orderBy('log.log_date', 'DESC')
+      .getMany();
 
     // Calculate calories consumed for each log
     for (const log of logs) {
