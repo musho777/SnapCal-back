@@ -21,8 +21,8 @@ export class BurnedDish {
   @Column({ type: 'uuid' })
   dish_id: string;
 
-  @Column({ type: 'uuid' })
-  meal_id: string;
+  @Column({ type: 'uuid', nullable: true })
+  meal_id: string | null;
 
   @Column({ type: 'int' })
   calories_burned: number;

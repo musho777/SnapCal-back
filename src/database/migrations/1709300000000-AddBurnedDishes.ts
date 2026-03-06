@@ -26,7 +26,7 @@ export class AddBurnedDishes1709300000000 implements MigrationInterface {
           {
             name: 'meal_id',
             type: 'uuid',
-            isNullable: false,
+            isNullable: true,
           },
           {
             name: 'calories_burned',
