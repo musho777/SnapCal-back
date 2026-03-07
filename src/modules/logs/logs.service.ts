@@ -1,12 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UserDailyLog } from './entities/user-daily-log.entity';
-import { BurnedDish } from './entities/burned-dish.entity';
-import { Dish } from '../dishes/entities/dish.entity';
-import { Meal } from '../meals/entities/meal.entity';
-import { CreateDailyLogDto } from './dto/create-daily-log.dto';
-import { UpdateDailyLogDto } from './dto/update-daily-log.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { UserDailyLog } from "./entities/user-daily-log.entity";
+import { BurnedDish } from "./entities/burned-dish.entity";
+import { Dish } from "../dishes/entities/dish.entity";
+import { Meal } from "../meals/entities/meal.entity";
+import { UserSettings } from "../settings/entities/user-settings.entity";
+import { CreateDailyLogDto } from "./dto/create-daily-log.dto";
+import { UpdateDailyLogDto } from "./dto/update-daily-log.dto";
 
 @Injectable()
 export class LogsService {
@@ -17,6 +18,8 @@ export class LogsService {
     private burnedDishRepository: Repository<BurnedDish>,
     @InjectRepository(Dish)
     private dishRepository: Repository<Dish>,
+    @InjectRepository(UserSettings)
+    private settingsRepository: Repository<UserSettings>,
   ) {}
 
   async findOrCreateDailyLog(
@@ -45,14 +48,14 @@ export class LogsService {
     const logDate = new Date(date);
 
     const log = await this.logRepository
-      .createQueryBuilder('log')
-      .leftJoinAndSelect('log.meals', 'meals')
-      .leftJoinAndSelect('meals.meal_dishes', 'meal_dishes')
-      .leftJoinAndSelect('meal_dishes.dish', 'dish')
-      .leftJoinAndSelect('log.burned_dishes', 'burned_dishes')
-      .leftJoinAndSelect('burned_dishes.dish', 'burned_dish_info')
-      .where('log.user_id = :userId', { userId })
-      .andWhere('log.log_date = :logDate', { logDate })
+      .createQueryBuilder("log")
+      .leftJoinAndSelect("log.meals", "meals")
+      .leftJoinAndSelect("meals.meal_dishes", "meal_dishes")
+      .leftJoinAndSelect("meal_dishes.dish", "dish")
+      .leftJoinAndSelect("log.burned_dishes", "burned_dishes")
+      .leftJoinAndSelect("burned_dishes.dish", "burned_dish_info")
+      .where("log.user_id = :userId", { userId })
+      .andWhere("log.log_date = :logDate", { logDate })
       .getOne();
 
     if (!log) {
@@ -89,27 +92,29 @@ export class LogsService {
       await this.logRepository.save(log);
     }
 
+    const settings = await this.settingsRepository.findOne({
+      where: { user_id: userId },
+    });
+
+    log.target_calories = settings?.target_calories || null;
+
     return log;
   }
 
-  async getLogsByDateRange(
-    userId: string,
-    startDate: string,
-    endDate: string,
-  ) {
+  async getLogsByDateRange(userId: string, startDate: string, endDate: string) {
     const logs = await this.logRepository
-      .createQueryBuilder('log')
-      .leftJoinAndSelect('log.meals', 'meals')
-      .leftJoinAndSelect('meals.meal_dishes', 'meal_dishes')
-      .leftJoinAndSelect('meal_dishes.dish', 'dish')
-      .leftJoinAndSelect('log.burned_dishes', 'burned_dishes')
-      .leftJoinAndSelect('burned_dishes.dish', 'burned_dish_info')
-      .where('log.user_id = :userId', { userId })
-      .andWhere('log.log_date BETWEEN :startDate AND :endDate', {
+      .createQueryBuilder("log")
+      .leftJoinAndSelect("log.meals", "meals")
+      .leftJoinAndSelect("meals.meal_dishes", "meal_dishes")
+      .leftJoinAndSelect("meal_dishes.dish", "dish")
+      .leftJoinAndSelect("log.burned_dishes", "burned_dishes")
+      .leftJoinAndSelect("burned_dishes.dish", "burned_dish_info")
+      .where("log.user_id = :userId", { userId })
+      .andWhere("log.log_date BETWEEN :startDate AND :endDate", {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
       })
-      .orderBy('log.log_date', 'DESC')
+      .orderBy("log.log_date", "DESC")
       .getMany();
 
     // Calculate calories consumed for each log
@@ -145,6 +150,16 @@ export class LogsService {
     // Save all updated logs in batch
     await this.logRepository.save(logs);
 
+    // Fetch user settings to get target_calories
+    const settings = await this.settingsRepository.findOne({
+      where: { user_id: userId },
+    });
+
+    // Add target_calories from settings to each log response
+    for (const log of logs) {
+      log.target_calories = settings?.target_calories || null;
+    }
+
     return logs;
   }
 
@@ -176,7 +191,7 @@ export class LogsService {
   async recalculateLogTotals(logId: string) {
     const log = await this.logRepository.findOne({
       where: { id: logId },
-      relations: ['meals'],
+      relations: ["meals"],
     });
 
     if (!log) {
@@ -227,15 +242,18 @@ export class LogsService {
     // If already exists, REMOVE it
     if (existingBurnedDish) {
       // Update daily log calories_burned
-      dailyLog.calories_burned = Math.max(0, (dailyLog.calories_burned || 0) - existingBurnedDish.calories_burned);
+      dailyLog.calories_burned = Math.max(
+        0,
+        (dailyLog.calories_burned || 0) - existingBurnedDish.calories_burned,
+      );
       await this.logRepository.save(dailyLog);
 
       // Remove the burned dish record
       await this.burnedDishRepository.delete(existingBurnedDish.id);
 
       return {
-        message: 'Dish calories removed from calories burned',
-        action: 'removed',
+        message: "Dish calories removed from calories burned",
+        action: "removed",
         isAdded: false,
       };
     }
@@ -246,7 +264,7 @@ export class LogsService {
     });
 
     if (!dish) {
-      throw new NotFoundException('Dish not found');
+      throw new NotFoundException("Dish not found");
     }
 
     // Create burned dish record
@@ -264,41 +282,41 @@ export class LogsService {
     await this.logRepository.save(dailyLog);
 
     return {
-      message: 'Dish calories added to calories burned',
-      action: 'added',
+      message: "Dish calories added to calories burned",
+      action: "added",
       isAdded: true,
       burnedDish,
     };
   }
 
-  async removeDishFromCaloriesBurned(
-    userId: string,
-    burnedDishId: string,
-  ) {
+  async removeDishFromCaloriesBurned(userId: string, burnedDishId: string) {
     // Find the burned dish record with its daily log
     const burnedDish = await this.burnedDishRepository.findOne({
       where: { id: burnedDishId },
-      relations: ['daily_log'],
+      relations: ["daily_log"],
     });
 
     if (!burnedDish) {
-      throw new NotFoundException('Burned dish record not found');
+      throw new NotFoundException("Burned dish record not found");
     }
 
     // Verify ownership
     if (burnedDish.daily_log.user_id !== userId) {
-      throw new NotFoundException('Burned dish record not found');
+      throw new NotFoundException("Burned dish record not found");
     }
 
     const dailyLog = burnedDish.daily_log;
 
     // Update daily log calories_burned
-    dailyLog.calories_burned = Math.max(0, (dailyLog.calories_burned || 0) - burnedDish.calories_burned);
+    dailyLog.calories_burned = Math.max(
+      0,
+      (dailyLog.calories_burned || 0) - burnedDish.calories_burned,
+    );
     await this.logRepository.save(dailyLog);
 
     // Remove the burned dish record
     await this.burnedDishRepository.delete(burnedDish.id);
 
-    return { message: 'Dish calories removed from calories burned' };
+    return { message: "Dish calories removed from calories burned" };
   }
 }
