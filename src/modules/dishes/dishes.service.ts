@@ -29,14 +29,27 @@ export class DishesService {
     private dietTagRepository: Repository<DietTag>,
   ) {}
 
-  async findAll(limit: number = 50, offset: number = 0) {
-    const [dishes, total] = await this.dishRepository.findAndCount({
-      where: { is_active: true, is_public: true },
-      relations: ["categories", "diet_tags"],
-      take: limit,
-      skip: offset,
-      order: { created_at: "DESC" },
-    });
+  async findAll(
+    limit: number = 50,
+    offset: number = 0,
+    dishType?: string,
+  ) {
+    const queryBuilder = this.dishRepository
+      .createQueryBuilder("dish")
+      .where("dish.is_active = :isActive", { isActive: true })
+      .andWhere("dish.is_public = :isPublic", { isPublic: true })
+      .leftJoinAndSelect("dish.categories", "categories")
+      .leftJoinAndSelect("dish.diet_tags", "diet_tags")
+      .orderBy("dish.created_at", "DESC")
+      .take(limit)
+      .skip(offset);
+
+    // Add dish_type filter if provided
+    if (dishType) {
+      queryBuilder.andWhere(":dishType = ANY(dish.dish_type)", { dishType });
+    }
+
+    const [dishes, total] = await queryBuilder.getManyAndCount();
 
     return {
       dishes,
@@ -242,8 +255,13 @@ export class DishesService {
     return this.categoryRepository.save(category);
   }
 
-  async searchDishes(query: string, limit: number = 20) {
-    const dishes = await this.dishRepository
+  async searchDishes(
+    query: string,
+    limit: number = 20,
+    offset: number = 0,
+    dishType?: string,
+  ) {
+    const queryBuilder = this.dishRepository
       .createQueryBuilder("dish")
       .where("dish.is_active = :isActive", { isActive: true })
       .andWhere("dish.is_public = :isPublic", { isPublic: true })
@@ -253,8 +271,20 @@ export class DishesService {
       .leftJoinAndSelect("dish.categories", "categories")
       .leftJoinAndSelect("dish.diet_tags", "diet_tags")
       .take(limit)
-      .getMany();
+      .skip(offset);
 
-    return dishes;
+    // Add dish_type filter if provided
+    if (dishType) {
+      queryBuilder.andWhere(":dishType = ANY(dish.dish_type)", { dishType });
+    }
+
+    const [dishes, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      dishes,
+      total,
+      limit,
+      offset,
+    };
   }
 }

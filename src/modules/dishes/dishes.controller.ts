@@ -57,22 +57,35 @@ export class DishesController {
   })
   @ApiQuery({ name: "limit", required: false, type: Number })
   @ApiQuery({ name: "offset", required: false, type: Number })
+  @ApiQuery({
+    name: "dish_type",
+    required: false,
+    type: String,
+    description: "Filter by dish type (breakfast, lunch, dinner, snack, dessert, appetizer)",
+    enum: ["breakfast", "lunch", "dinner", "snack", "dessert", "appetizer"],
+  })
   @ApiResponse({ status: 200, description: "Dishes retrieved" })
   async findAll(
     @Query("q") query?: string,
     @Query("limit") limit?: string,
     @Query("offset") offset?: string,
+    @Query("dish_type") dishType?: string,
   ) {
     const numLimit = limit ? parseInt(limit, 10) : undefined;
     const numOffset = offset ? parseInt(offset, 10) : undefined;
 
     // If query parameter is provided, search dishes
     if (query) {
-      return this.dishesService.searchDishes(query, numLimit);
+      return this.dishesService.searchDishes(
+        query,
+        numLimit,
+        numOffset,
+        dishType,
+      );
     }
 
     // Otherwise, return all dishes with pagination
-    return this.dishesService.findAll(numLimit, numOffset);
+    return this.dishesService.findAll(numLimit, numOffset, dishType);
   }
 
   @Get("categories")
