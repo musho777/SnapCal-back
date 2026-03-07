@@ -46,7 +46,7 @@ export class DishesService {
 
     // Add dish_type filter if provided
     if (dishType) {
-      queryBuilder.andWhere(":dishType = ANY(dish.dish_type)", { dishType });
+      queryBuilder.andWhere("dish.dish_type IS NOT NULL AND :dishType = ANY(dish.dish_type)", { dishType });
     }
 
     const [dishes, total] = await queryBuilder.getManyAndCount();
@@ -275,7 +275,7 @@ export class DishesService {
 
     // Add dish_type filter if provided
     if (dishType) {
-      queryBuilder.andWhere(":dishType = ANY(dish.dish_type)", { dishType });
+      queryBuilder.andWhere("dish.dish_type IS NOT NULL AND :dishType = ANY(dish.dish_type)", { dishType });
     }
 
     const [dishes, total] = await queryBuilder.getManyAndCount();

@@ -63,7 +63,7 @@ export class Dish {
   sodium_mg: number | null;
 
   @ApiProperty({ enum: DishType, isArray: true, required: false })
-  @Column({ type: 'simple-array', nullable: true })
+  @Column({ type: 'text', array: true, nullable: true })
   dish_type: DishType[] | null;
 
   @Column({ type: 'boolean', default: true })
