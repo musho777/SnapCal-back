@@ -116,6 +116,21 @@ export class UsersService {
 
     await this.measurementRepository.save(measurement);
 
+    // Update profile with current weight and height
+    let profile = await this.profileRepository.findOne({
+      where: { user_id: userId },
+    });
+
+    if (profile) {
+      if (createDto.weight_kg !== undefined) {
+        profile.current_weight_kg = createDto.weight_kg;
+      }
+      if (createDto.height_cm !== undefined) {
+        profile.height_cm = createDto.height_cm;
+      }
+      await this.profileRepository.save(profile);
+    }
+
     return measurement;
   }
 
@@ -127,6 +142,27 @@ export class UsersService {
 
     if (result.affected === 0) {
       throw new NotFoundException('Measurement not found');
+    }
+
+    // Update profile with most recent measurement values
+    const mostRecentMeasurement = await this.measurementRepository.findOne({
+      where: { user_id: userId },
+      order: { measured_at: 'DESC' },
+    });
+
+    let profile = await this.profileRepository.findOne({
+      where: { user_id: userId },
+    });
+
+    if (profile) {
+      if (mostRecentMeasurement) {
+        profile.current_weight_kg = mostRecentMeasurement.weight_kg;
+        profile.height_cm = mostRecentMeasurement.height_cm;
+      } else {
+        // No measurements left, clear the values
+        profile.current_weight_kg = null;
+      }
+      await this.profileRepository.save(profile);
     }
 
     return { message: 'Measurement deleted successfully' };
