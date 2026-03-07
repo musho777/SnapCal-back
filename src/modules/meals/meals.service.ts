@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Meal } from './entities/meal.entity';
 import { MealDish } from './entities/meal-dish.entity';
 import { Dish } from '../dishes/entities/dish.entity';
+import { BurnedDish } from '../logs/entities/burned-dish.entity';
+import { UserDailyLog } from '../logs/entities/user-daily-log.entity';
 import { LogsService } from '../logs/logs.service';
 import { AddDishToMealDto } from './dto/add-dish-to-meal.dto';
 
@@ -16,6 +18,10 @@ export class MealsService {
     private mealDishRepository: Repository<MealDish>,
     @InjectRepository(Dish)
     private dishRepository: Repository<Dish>,
+    @InjectRepository(BurnedDish)
+    private burnedDishRepository: Repository<BurnedDish>,
+    @InjectRepository(UserDailyLog)
+    private logRepository: Repository<UserDailyLog>,
     private logsService: LogsService,
   ) {}
 
@@ -105,7 +111,41 @@ export class MealsService {
     }
 
     const mealId = mealDish.meal.id;
+    const dishId = mealDish.dish_id;
     const dailyLogId = mealDish.meal.daily_log.id;
+
+    // Find any burned dish records for this dish from this meal
+    const burnedDishes = await this.burnedDishRepository.find({
+      where: {
+        dish_id: dishId,
+        meal_id: mealId,
+      },
+    });
+
+    // If there are burned dishes, update the daily log and remove them
+    if (burnedDishes.length > 0) {
+      const dailyLog = await this.logRepository.findOne({
+        where: { id: dailyLogId },
+      });
+
+      if (dailyLog) {
+        // Calculate total calories to subtract
+        const totalBurnedCalories = burnedDishes.reduce(
+          (sum, bd) => sum + bd.calories_burned,
+          0,
+        );
+
+        // Update daily log calories_burned
+        dailyLog.calories_burned = Math.max(
+          0,
+          (dailyLog.calories_burned || 0) - totalBurnedCalories,
+        );
+        await this.logRepository.save(dailyLog);
+      }
+
+      // Remove all burned dish records
+      await this.burnedDishRepository.remove(burnedDishes);
+    }
 
     // Delete meal dish
     await this.mealDishRepository.delete(mealDishId);
