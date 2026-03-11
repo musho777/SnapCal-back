@@ -287,4 +287,43 @@ export class DishesService {
       offset,
     };
   }
+
+  async findMyDishes(
+    userId: string,
+    limit: number = 50,
+    offset: number = 0,
+    query?: string,
+    dishType?: string,
+  ) {
+    const queryBuilder = this.dishRepository
+      .createQueryBuilder("dish")
+      .where("dish.created_by = :userId", { userId })
+      .andWhere("dish.is_active = :isActive", { isActive: true })
+      .leftJoinAndSelect("dish.categories", "categories")
+      .leftJoinAndSelect("dish.diet_tags", "diet_tags")
+      .orderBy("dish.created_at", "DESC")
+      .take(limit)
+      .skip(offset);
+
+    // Add search query if provided
+    if (query) {
+      queryBuilder.andWhere("(dish.name ILIKE :query OR dish.description ILIKE :query)", {
+        query: `%${query}%`,
+      });
+    }
+
+    // Add dish_type filter if provided
+    if (dishType) {
+      queryBuilder.andWhere("dish.dish_type IS NOT NULL AND :dishType = ANY(dish.dish_type)", { dishType });
+    }
+
+    const [dishes, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      dishes,
+      total,
+      limit,
+      offset,
+    };
+  }
 }

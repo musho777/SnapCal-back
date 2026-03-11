@@ -167,6 +167,45 @@ export class DishesController {
     return this.dishesService.createCategory(createDto, icon);
   }
 
+  @Get("my")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Get dishes created by current user" })
+  @ApiQuery({
+    name: "q",
+    required: false,
+    type: String,
+    description: "Search query for dish name or description",
+  })
+  @ApiQuery({ name: "limit", required: false, type: Number })
+  @ApiQuery({ name: "offset", required: false, type: Number })
+  @ApiQuery({
+    name: "dish_type",
+    required: false,
+    type: String,
+    description: "Filter by dish type (breakfast, lunch, dinner, snack, dessert, appetizer)",
+    enum: ["breakfast", "lunch", "dinner", "snack", "dessert", "appetizer"],
+  })
+  @ApiResponse({ status: 200, description: "User dishes retrieved" })
+  async findMyDishes(
+    @CurrentUser() user: User,
+    @Query("q") query?: string,
+    @Query("limit") limit?: string,
+    @Query("offset") offset?: string,
+    @Query("dish_type") dishType?: string,
+  ) {
+    const numLimit = limit ? parseInt(limit, 10) : undefined;
+    const numOffset = offset ? parseInt(offset, 10) : undefined;
+
+    return this.dishesService.findMyDishes(
+      user.id,
+      numLimit,
+      numOffset,
+      query,
+      dishType,
+    );
+  }
+
   @Get(":id")
   @ApiOperation({ summary: "Get dish by ID" })
   @ApiResponse({ status: 200, description: "Dish retrieved" })
