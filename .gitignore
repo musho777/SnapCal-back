@@ -45,4 +45,7 @@ lerna-debug.log*
 /certs/*.p8
 /certs/*.pem
 
+# Firebase
+*firebase-adminsdk*.json
+firebase-service-account.json
 

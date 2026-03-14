@@ -13,19 +13,31 @@ export class FcmService {
 
   private initializeFirebase() {
     try {
-      // Use path relative to project root
+      // Option 1: Use environment variable (for Railway/production)
+      const firebaseConfig = this.configService.get<string>('FIREBASE_CONFIG');
+
+      if (firebaseConfig) {
+        // Parse JSON from environment variable
+        const serviceAccount = JSON.parse(firebaseConfig);
+        this.firebaseApp = admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+        });
+        this.logger.log("Firebase Admin SDK initialized from environment variable");
+        return;
+      }
+
+      // Option 2: Use local file (for development)
       const path = require('path');
       const serviceAccountPath = path.join(
         process.cwd(),
         'snap-cal-5fd97-firebase-adminsdk-fbsvc-29930cbe7c.json'
       );
 
-      // Initialize Firebase Admin SDK
       this.firebaseApp = admin.initializeApp({
         credential: admin.credential.cert(serviceAccountPath),
       });
 
-      this.logger.log("Firebase Admin SDK initialized successfully");
+      this.logger.log("Firebase Admin SDK initialized from local file");
     } catch (error) {
       this.logger.error("Failed to initialize Firebase Admin SDK", error);
     }
