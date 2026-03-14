@@ -56,6 +56,12 @@ export class UserSettings {
   @Column({ type: 'varchar', length: 10, default: 'metric' })
   measurement_system: string; // 'metric' or 'imperial'
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  fcm_token: string | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  fcm_device_type: string | null; // 'android', 'ios', 'web'
+
   @CreateDateColumn()
   created_at: Date;
 

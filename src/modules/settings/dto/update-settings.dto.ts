@@ -32,4 +32,14 @@ export class UpdateSettingsDto {
   @IsOptional()
   @IsString()
   measurement_system?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  fcm_token?: string;
+
+  @ApiProperty({ required: false, enum: ['android', 'ios', 'web'] })
+  @IsOptional()
+  @IsString()
+  fcm_device_type?: string;
 }

@@ -5,6 +5,7 @@ import { UserSettings } from './entities/user-settings.entity';
 import { UserCalorieTarget } from './entities/user-calorie-target.entity';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
 import { CreateCalorieTargetDto } from './dto/create-calorie-target.dto';
+import { RegisterFcmTokenDto } from './dto/register-fcm-token.dto';
 
 @Injectable()
 export class SettingsService {
@@ -119,5 +120,63 @@ export class SettingsService {
     }
 
     return { message: 'Calorie target deleted successfully' };
+  }
+
+  async registerFcmToken(userId: string, registerDto: RegisterFcmTokenDto) {
+    let settings = await this.settingsRepository.findOne({
+      where: { user_id: userId },
+    });
+
+    if (!settings) {
+      settings = this.settingsRepository.create({
+        user_id: userId,
+      });
+    }
+
+    settings.fcm_token = registerDto.fcm_token;
+    settings.fcm_device_type = registerDto.device_type || null;
+
+    await this.settingsRepository.save(settings);
+
+    return {
+      message: 'FCM token registered successfully',
+      fcm_token: settings.fcm_token,
+      device_type: settings.fcm_device_type,
+    };
+  }
+
+  async getFcmToken(userId: string) {
+    const settings = await this.settingsRepository.findOne({
+      where: { user_id: userId },
+    });
+
+    if (!settings || !settings.fcm_token) {
+      return {
+        fcm_token: null,
+        device_type: null,
+      };
+    }
+
+    return {
+      fcm_token: settings.fcm_token,
+      device_type: settings.fcm_device_type,
+    };
+  }
+
+  async revokeFcmToken(userId: string) {
+    const settings = await this.settingsRepository.findOne({
+      where: { user_id: userId },
+    });
+
+    if (!settings) {
+      throw new NotFoundException('Settings not found');
+    }
+
+    settings.fcm_token = null;
+    settings.fcm_device_type = null;
+
+    await this.settingsRepository.save(settings);
+
+    return { message: 'FCM token revoked successfully' };
   }
 }

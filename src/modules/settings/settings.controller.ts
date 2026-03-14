@@ -21,6 +21,7 @@ import {
 import { SettingsService } from './settings.service';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
 import { CreateCalorieTargetDto } from './dto/create-calorie-target.dto';
+import { RegisterFcmTokenDto } from './dto/register-fcm-token.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '@/common/decorators';
 import { User } from '../users/entities/user.entity';
@@ -91,5 +92,30 @@ export class SettingsController {
     @Param('id') targetId: string,
   ) {
     return this.settingsService.deleteCalorieTarget(user.id, targetId);
+  }
+
+  @Post('fcm-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Register or update FCM token for push notifications' })
+  @ApiResponse({ status: 200, description: 'FCM token registered successfully' })
+  async registerFcmToken(
+    @CurrentUser() user: User,
+    @Body() registerDto: RegisterFcmTokenDto,
+  ) {
+    return this.settingsService.registerFcmToken(user.id, registerDto);
+  }
+
+  @Get('fcm-token')
+  @ApiOperation({ summary: 'Get current FCM token' })
+  @ApiResponse({ status: 200, description: 'FCM token retrieved' })
+  async getFcmToken(@CurrentUser() user: User) {
+    return this.settingsService.getFcmToken(user.id);
+  }
+
+  @Delete('fcm-token')
+  @ApiOperation({ summary: 'Revoke FCM token' })
+  @ApiResponse({ status: 200, description: 'FCM token revoked' })
+  async revokeFcmToken(@CurrentUser() user: User) {
+    return this.settingsService.revokeFcmToken(user.id);
   }
 }

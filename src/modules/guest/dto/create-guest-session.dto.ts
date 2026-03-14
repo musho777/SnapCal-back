@@ -87,4 +87,21 @@ export class CreateGuestSessionDto {
   @IsOptional()
   @IsIn(['metric', 'imperial'])
   measurement_system?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'FCM token for push notifications'
+  })
+  @IsOptional()
+  @IsString()
+  fcm_token?: string;
+
+  @ApiProperty({
+    required: false,
+    enum: ['android', 'ios', 'web'],
+    description: 'Device type for FCM notifications'
+  })
+  @IsOptional()
+  @IsIn(['android', 'ios', 'web'])
+  fcm_device_type?: string;
 }

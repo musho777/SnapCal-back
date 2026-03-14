@@ -330,6 +330,8 @@ export class AuthService {
       target_carbs_g: createGuestDto.target_carbs_g || null,
       target_fats_g: createGuestDto.target_fats_g || null,
       measurement_system: createGuestDto.measurement_system || 'metric',
+      fcm_token: createGuestDto.fcm_token || null,
+      fcm_device_type: createGuestDto.fcm_device_type || null,
     });
 
     await this.settingsRepository.save(settings);
