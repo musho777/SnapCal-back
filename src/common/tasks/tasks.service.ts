@@ -179,4 +179,47 @@ export class TasksService {
       this.logger.error("Error during dinner reminder:", error);
     }
   }
+
+  /**
+   * Send daily hydration reminder
+   * Runs every day at 3:00 PM
+   */
+  @Cron("0 15 * * *")
+  async sendHydrationReminder() {
+    this.logger.log("Starting daily hydration reminder...");
+
+    try {
+      // Get all users with FCM tokens and notifications enabled
+      const usersWithFcm = await this.settingsRepository.find({
+        where: {
+          fcm_token: Not(IsNull()),
+          notifications_enabled: true,
+        },
+      });
+
+      if (usersWithFcm.length === 0) {
+        this.logger.log("No users with FCM tokens found.");
+        return;
+      }
+
+      const userIds = usersWithFcm.map((setting) => setting.user_id);
+
+      // Send bulk notification
+      const result = await this.notificationsService.sendBulkNotification(
+        userIds,
+        {
+          notification_type_id: "8b9eb6ce-d839-4f24-a217-5104f361a8cd",
+          title: "Hydration Reminder",
+          message:
+            "You're doing great! Remember to drink water throughout the day.",
+        },
+      );
+
+      this.logger.log(
+        `Hydration reminder sent. Sent: ${result.sent}, Failed: ${result.failed}`,
+      );
+    } catch (error) {
+      this.logger.error("Error during hydration reminder:", error);
+    }
+  }
 }
