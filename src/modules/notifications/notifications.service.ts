@@ -28,7 +28,7 @@ export class NotificationsService {
   async sendNotification(
     userId: string,
     sendDto: SendNotificationDto,
-  ): Promise<Notification> {
+  ): Promise<Notification | null> {
     const { notification_type_id, title, message, icon, icon_bg, icon_color } =
       sendDto;
 
@@ -47,7 +47,15 @@ export class NotificationsService {
       notification_type_id,
     );
 
-    // Create notification in DB
+    // If notification is disabled, don't save it or send it
+    if (!isEnabled) {
+      this.logger.debug(
+        `Notification type ${notification_type_id} is disabled for user ${userId}`,
+      );
+      return null;
+    }
+
+    // Create notification in DB only if enabled
     const notification = this.notificationRepository.create({
       user_id: userId,
       notification_type_id,
@@ -61,24 +69,22 @@ export class NotificationsService {
 
     await this.notificationRepository.save(notification);
 
-    // Send FCM notification if enabled
-    if (isEnabled) {
-      const settings = await this.settingsRepository.findOne({
-        where: { user_id: userId },
-      });
+    // Send FCM notification
+    const settings = await this.settingsRepository.findOne({
+      where: { user_id: userId },
+    });
 
-      if (settings?.fcm_token && settings.notifications_enabled) {
-        console.log("11");
-        await this.fcmService.sendNotification(
-          settings.fcm_token,
-          title,
-          message,
-          {
-            notification_id: notification.id,
-            type_id: notification_type_id,
-          },
-        );
-      }
+    if (settings?.fcm_token && settings.notifications_enabled) {
+      console.log("11");
+      await this.fcmService.sendNotification(
+        settings.fcm_token,
+        title,
+        message,
+        {
+          notification_id: notification.id,
+          type_id: notification_type_id,
+        },
+      );
     }
 
     return notification;
@@ -112,7 +118,15 @@ export class NotificationsService {
           notification_type_id,
         );
 
-        // Create notification in DB
+        // Skip if notification is disabled for this user
+        if (!isEnabled) {
+          this.logger.debug(
+            `Notification type ${notification_type_id} is disabled for user ${userId}`,
+          );
+          continue;
+        }
+
+        // Create notification in DB only if enabled
         const notification = this.notificationRepository.create({
           user_id: userId,
           notification_type_id,
@@ -127,14 +141,12 @@ export class NotificationsService {
         await this.notificationRepository.save(notification);
 
         // Collect FCM tokens for enabled users
-        if (isEnabled) {
-          const settings = await this.settingsRepository.findOne({
-            where: { user_id: userId },
-          });
+        const settings = await this.settingsRepository.findOne({
+          where: { user_id: userId },
+        });
 
-          if (settings?.fcm_token && settings.notifications_enabled) {
-            fcmTokens.push(settings.fcm_token);
-          }
+        if (settings?.fcm_token && settings.notifications_enabled) {
+          fcmTokens.push(settings.fcm_token);
         }
 
         sent++;
