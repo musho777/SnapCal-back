@@ -174,12 +174,18 @@ export class NotificationsService {
     limit: number = 50,
     offset: number = 0,
     notificationType?: string,
+    unread?: boolean,
   ) {
     const whereCondition: any = { user_id: userId };
 
     // Add type filter if provided
     if (notificationType) {
       whereCondition.notification_type_id = notificationType;
+    }
+
+    // Add unread filter if provided
+    if (unread === true) {
+      whereCondition.read = false;
     }
 
     const [notifications, total] =

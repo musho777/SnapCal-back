@@ -37,20 +37,24 @@ export class NotificationsController {
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
   @ApiQuery({ name: 'type', required: false, type: String, description: 'Filter by notification type ID' })
+  @ApiQuery({ name: 'unread', required: false, type: Boolean, description: 'Filter by unread notifications only' })
   @ApiResponse({ status: 200, description: 'Notifications retrieved' })
   async getUserNotifications(
     @CurrentUser() user: User,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
     @Query('type') notificationType?: string,
+    @Query('unread') unread?: string,
   ) {
     const numLimit = limit ? parseInt(limit, 10) : undefined;
     const numOffset = offset ? parseInt(offset, 10) : undefined;
+    const onlyUnread = unread === 'true';
     return this.notificationsService.getUserNotifications(
       user.id,
       numLimit,
       numOffset,
       notificationType,
+      onlyUnread,
     );
   }
 
