@@ -36,11 +36,13 @@ export class NotificationsController {
   @ApiOperation({ summary: 'Get user notifications' })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
+  @ApiQuery({ name: 'type', required: false, type: String, description: 'Filter by notification type ID' })
   @ApiResponse({ status: 200, description: 'Notifications retrieved' })
   async getUserNotifications(
     @CurrentUser() user: User,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
+    @Query('type') notificationType?: string,
   ) {
     const numLimit = limit ? parseInt(limit, 10) : undefined;
     const numOffset = offset ? parseInt(offset, 10) : undefined;
@@ -48,6 +50,7 @@ export class NotificationsController {
       user.id,
       numLimit,
       numOffset,
+      notificationType,
     );
   }
 
@@ -101,6 +104,13 @@ export class NotificationsController {
     @Param('id') notificationId: string,
   ) {
     return this.notificationsService.deleteNotification(user.id, notificationId);
+  }
+
+  @Delete()
+  @ApiOperation({ summary: 'Clear all notifications' })
+  @ApiResponse({ status: 200, description: 'All notifications cleared' })
+  async clearAllNotifications(@CurrentUser() user: User) {
+    return this.notificationsService.clearAllNotifications(user.id);
   }
 
   @Get('preferences')

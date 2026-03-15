@@ -161,10 +161,18 @@ export class NotificationsService {
     userId: string,
     limit: number = 50,
     offset: number = 0,
+    notificationType?: string,
   ) {
+    const whereCondition: any = { user_id: userId };
+
+    // Add type filter if provided
+    if (notificationType) {
+      whereCondition.notification_type_id = notificationType;
+    }
+
     const [notifications, total] =
       await this.notificationRepository.findAndCount({
-        where: { user_id: userId },
+        where: whereCondition,
         relations: ["notification_type"],
         order: { created_at: "DESC" },
         take: limit,
@@ -221,6 +229,17 @@ export class NotificationsService {
     }
 
     return { message: "Notification deleted successfully" };
+  }
+
+  async clearAllNotifications(userId: string) {
+    const result = await this.notificationRepository.delete({
+      user_id: userId,
+    });
+
+    return {
+      message: "All notifications cleared successfully",
+      deleted_count: result.affected || 0,
+    };
   }
 
   async getPreferences(userId: string) {
