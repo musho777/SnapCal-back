@@ -80,7 +80,7 @@ export class TasksService {
       const result = await this.notificationsService.sendBulkNotification(
         userIds,
         {
-          notification_type_id: "cfd76970-eacb-4e2d-ae75-90dcf882b9d",
+          notification_type_id: "cfd76970-eacb-4e2d-ae75-90dcf882b9de",
           title: "Time for Breakfast",
           message:
             "Don't skip your morning meal. Start your day with a nutritious breakfast to fuel your body and mind.",
