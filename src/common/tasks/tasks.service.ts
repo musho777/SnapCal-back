@@ -55,7 +55,7 @@ export class TasksService {
    * Send daily breakfast reminder
    * Runs every day at 8:00 AM
    */
-  @Cron("*/10 * * * * *")
+  @Cron("0 * * * * *")
   // @Cron("0 8 * * *")
   async sendBreakfastReminder() {
     this.logger.log("Starting daily breakfast reminder...");
