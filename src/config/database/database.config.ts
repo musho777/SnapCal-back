@@ -15,6 +15,7 @@ import { Dish } from "@modules/dishes/entities/dish.entity";
 import { DishCategory } from "@modules/dishes/entities/dish-category.entity";
 import { DishIngredient } from "@modules/dishes/entities/dish-ingredient.entity";
 import { DishCookingStep } from "@modules/dishes/entities/dish-cooking-step.entity";
+import { SavedDish } from "@modules/dishes/entities/saved-dish.entity";
 import { DishRating } from "@modules/ratings/entities/dish-rating.entity";
 import { DietTag } from "@modules/diet-tags/entities/diet-tag.entity";
 import { EmailVerification } from "@modules/auth/entities/email-verification.entity";
@@ -53,6 +54,7 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
           DishCategory,
           DishIngredient,
           DishCookingStep,
+          SavedDish,
           DishRating,
           DietTag,
           EmailVerification,
@@ -95,6 +97,7 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
         DishCategory,
         DishIngredient,
         DishCookingStep,
+        SavedDish,
         DishRating,
         DietTag,
         EmailVerification,
