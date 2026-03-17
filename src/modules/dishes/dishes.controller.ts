@@ -745,4 +745,94 @@ export class DishesController {
   async delete(@Param("id") id: string, @CurrentUser() user: User) {
     return this.dishesService.delete(id, user.id);
   }
+
+  @Get("saved/list")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Get saved dishes for current user" })
+  @ApiQuery({
+    name: "q",
+    required: false,
+    type: String,
+    description: "Search query for dish name or description",
+  })
+  @ApiQuery({ name: "limit", required: false, type: Number })
+  @ApiQuery({ name: "offset", required: false, type: Number })
+  @ApiQuery({
+    name: "dish_type",
+    required: false,
+    type: String,
+    description:
+      "Filter by dish type (breakfast, lunch, dinner, snack, dessert, appetizer)",
+    enum: ["breakfast", "lunch", "dinner", "snack", "dessert", "appetizer"],
+  })
+  @ApiQuery({
+    name: "category_ids",
+    required: false,
+    type: [String],
+    description:
+      "Filter by category IDs (can provide multiple, comma-separated)",
+    example:
+      "10000006-0000-4000-8000-000000000006,10000007-0000-4000-8000-000000000007",
+  })
+  @ApiResponse({ status: 200, description: "Saved dishes retrieved" })
+  async getSavedDishes(
+    @CurrentUser() user: User,
+    @Query("q") query?: string,
+    @Query("limit") limit?: string,
+    @Query("offset") offset?: string,
+    @Query("dish_type") dishType?: string,
+    @Query("category_ids") categoryIds?: string,
+  ) {
+    const numLimit = limit ? parseInt(limit, 10) : undefined;
+    const numOffset = offset ? parseInt(offset, 10) : undefined;
+
+    let categoryIdsArray: string[] | undefined;
+    if (categoryIds) {
+      categoryIdsArray = Array.isArray(categoryIds)
+        ? categoryIds
+        : categoryIds.split(",").map((id) => id.trim());
+    }
+
+    return this.dishesService.getSavedDishes(
+      user.id,
+      numLimit,
+      numOffset,
+      query,
+      dishType,
+      categoryIdsArray,
+    );
+  }
+
+  @Post(":id/save")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Save a dish to favorites" })
+  @ApiResponse({ status: 200, description: "Dish saved successfully" })
+  @ApiResponse({ status: 404, description: "Dish not found" })
+  async saveDish(@Param("id") id: string, @CurrentUser() user: User) {
+    return this.dishesService.saveDish(user.id, id);
+  }
+
+  @Delete(":id/save")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Unsave a dish from favorites" })
+  @ApiResponse({ status: 200, description: "Dish unsaved successfully" })
+  @ApiResponse({ status: 404, description: "Saved dish not found" })
+  async unsaveDish(@Param("id") id: string, @CurrentUser() user: User) {
+    return this.dishesService.unsaveDish(user.id, id);
+  }
+
+  @Get(":id/is-saved")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Check if dish is saved by current user" })
+  @ApiResponse({ status: 200, description: "Returns saved status" })
+  async isSaved(@Param("id") id: string, @CurrentUser() user: User) {
+    const saved = await this.dishesService.isSaved(user.id, id);
+    return { saved };
+  }
 }

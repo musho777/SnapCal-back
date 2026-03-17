@@ -19,6 +19,7 @@ import { UserDailyLog } from '../../logs/entities/user-daily-log.entity';
 import { BodyMeasurement } from '../../users/entities/body-measurement.entity';
 import { DishRating } from '../../ratings/entities/dish-rating.entity';
 import { DietTag } from '../../diet-tags/entities/diet-tag.entity';
+import { SavedDish } from '../../dishes/entities/saved-dish.entity';
 
 @Entity('users')
 export class User {
@@ -109,4 +110,7 @@ export class User {
     inverseJoinColumn: { name: 'diet_tag_id', referencedColumnName: 'id' },
   })
   diet_preferences: DietTag[];
+
+  @OneToMany(() => SavedDish, (savedDish) => savedDish.user)
+  saved_dishes: SavedDish[];
 }

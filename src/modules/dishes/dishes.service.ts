@@ -10,6 +10,7 @@ import { DishCategory } from "./entities/dish-category.entity";
 import { DishIngredient } from "./entities/dish-ingredient.entity";
 import { DishCookingStep } from "./entities/dish-cooking-step.entity";
 import { DietTag } from "../diet-tags/entities/diet-tag.entity";
+import { SavedDish } from "./entities/saved-dish.entity";
 import { CreateDishDto } from "./dto/create-dish.dto";
 import { UpdateDishDto } from "./dto/update-dish.dto";
 import { CreateDishCategoryDto } from "./dto/create-dish-category.dto";
@@ -28,6 +29,8 @@ export class DishesService {
     private cookingStepRepository: Repository<DishCookingStep>,
     @InjectRepository(DietTag)
     private dietTagRepository: Repository<DietTag>,
+    @InjectRepository(SavedDish)
+    private savedDishRepository: Repository<SavedDish>,
   ) {}
 
   async findAll(
@@ -420,5 +423,126 @@ export class DishesService {
       limit,
       offset,
     };
+  }
+
+  async saveDish(userId: string, dishId: string) {
+    // Check if dish exists
+    const dish = await this.dishRepository.findOne({
+      where: { id: dishId, is_active: true },
+    });
+
+    if (!dish) {
+      throw new NotFoundException("Dish not found");
+    }
+
+    // Check if already saved
+    const existingSave = await this.savedDishRepository.findOne({
+      where: { user_id: userId, dish_id: dishId },
+    });
+
+    if (existingSave) {
+      return {
+        message: "Dish already saved",
+        saved: true,
+      };
+    }
+
+    // Save the dish
+    const savedDish = this.savedDishRepository.create({
+      user_id: userId,
+      dish_id: dishId,
+    });
+
+    await this.savedDishRepository.save(savedDish);
+
+    return {
+      message: "Dish saved successfully",
+      saved: true,
+    };
+  }
+
+  async unsaveDish(userId: string, dishId: string) {
+    const savedDish = await this.savedDishRepository.findOne({
+      where: { user_id: userId, dish_id: dishId },
+    });
+
+    if (!savedDish) {
+      throw new NotFoundException("Saved dish not found");
+    }
+
+    await this.savedDishRepository.remove(savedDish);
+
+    return {
+      message: "Dish unsaved successfully",
+      saved: false,
+    };
+  }
+
+  async getSavedDishes(
+    userId: string,
+    limit: number = 50,
+    offset: number = 0,
+    query?: string,
+    dishType?: string,
+    categoryIds?: string[],
+  ) {
+    const queryBuilder = this.savedDishRepository
+      .createQueryBuilder("saved_dish")
+      .leftJoinAndSelect("saved_dish.dish", "dish")
+      .leftJoinAndSelect("dish.categories", "categories")
+      .leftJoinAndSelect("dish.diet_tags", "diet_tags")
+      .where("saved_dish.user_id = :userId", { userId })
+      .andWhere("dish.is_active = :isActive", { isActive: true })
+      .orderBy("saved_dish.saved_at", "DESC")
+      .take(limit)
+      .skip(offset);
+
+    // Add search query if provided
+    if (query) {
+      queryBuilder.andWhere(
+        "(dish.name ILIKE :query OR dish.description ILIKE :query)",
+        {
+          query: `%${query}%`,
+        },
+      );
+    }
+
+    // Add dish_type filter if provided
+    if (dishType) {
+      queryBuilder.andWhere(
+        "dish.dish_type IS NOT NULL AND :dishType = ANY(dish.dish_type)",
+        { dishType },
+      );
+    }
+
+    // Add category filter if provided
+    if (categoryIds && categoryIds.length > 0) {
+      queryBuilder.andWhere("categories.id IN (:...categoryIds)", {
+        categoryIds,
+      });
+    }
+
+    const [savedDishes, total] = await queryBuilder.getManyAndCount();
+
+    // Extract the dishes from the saved dishes
+    const dishes = savedDishes.map((savedDish) => ({
+      ...savedDish.dish,
+      saved_at: savedDish.saved_at,
+    }));
+
+    return {
+      dishes,
+      total,
+      limit,
+      offset,
+    };
+  }
+
+  async isSaved(userId: string, dishId: string): Promise<boolean> {
+    const savedDish = await this.savedDishRepository.findOne({
+      where: { user_id: userId, dish_id: dishId },
+    });
+
+    return !!savedDish;
   }
 }

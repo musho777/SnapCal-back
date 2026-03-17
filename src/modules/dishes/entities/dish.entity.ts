@@ -16,6 +16,7 @@ import { MealDish } from '../../meals/entities/meal-dish.entity';
 import { DishRating } from '../../ratings/entities/dish-rating.entity';
 import { DietTag } from '../../diet-tags/entities/diet-tag.entity';
 import { DishType } from '../../../common/enums/dish-type.enum';
+import { SavedDish } from './saved-dish.entity';
 
 @Entity('dishes')
 export class Dish {
@@ -117,4 +118,7 @@ export class Dish {
 
   @OneToMany(() => DishRating, (rating) => rating.dish)
   ratings: DishRating[];
+
+  @OneToMany(() => SavedDish, (savedDish) => savedDish.dish)
+  saved_by_users: SavedDish[];
 }
