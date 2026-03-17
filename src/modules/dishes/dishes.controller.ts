@@ -343,7 +343,8 @@ export class DishesController {
   @ApiResponse({ status: 200, description: "Dish retrieved" })
   @ApiResponse({ status: 404, description: "Dish not found" })
   async findOne(@Param("id") id: string, @CurrentUser() user?: User) {
-    return this.dishesService.findOne(id, user?.id);
+    const result = await this.dishesService.findOne(id, user?.id);
+    return result;
   }
 
   @Post()

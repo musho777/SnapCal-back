@@ -92,7 +92,10 @@ export class DishesService {
     // Add is_saved field if user is authenticated
     if (userId) {
       const is_saved = await this.isSaved(userId, dish.id);
-      return { ...dish, is_saved };
+      return {
+        ...dish,
+        is_saved,
+      } as any;
     }
 
     return dish;
