@@ -2,17 +2,24 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsString, IsNumber, IsOptional, IsBoolean } from "class-validator";
 import { Transform } from "class-transformer";
 
-export class CreateDishCategoryDto {
-  @ApiProperty({ description: "Category name", example: "Italian" })
+export class UpdateDishCategoryDto {
+  @ApiProperty({
+    required: false,
+    description: "Category name",
+    example: "Italian",
+  })
+  @IsOptional()
   @IsString()
-  name: string;
+  name?: string;
 
   @ApiProperty({
+    required: false,
     description: "URL-friendly slug (unique identifier)",
     example: "italian",
   })
+  @IsOptional()
   @IsString()
-  slug: string;
+  slug?: string;
 
   @ApiProperty({
     required: false,
@@ -25,17 +32,15 @@ export class CreateDishCategoryDto {
 
   @ApiProperty({
     required: false,
-    default: 0,
     description: "Sort order for displaying categories",
   })
   @IsOptional()
   @IsNumber()
-  @Transform(({ value }) => (value ? Number(value) : 0))
+  @Transform(({ value }) => (value ? Number(value) : undefined))
   sort_order?: number;
 
   @ApiProperty({
     required: false,
-    default: true,
     description: "Whether the category is active",
   })
   @IsOptional()

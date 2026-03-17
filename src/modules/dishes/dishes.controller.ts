@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -31,6 +32,7 @@ import { UpdateDishDto } from "./dto/update-dish.dto";
 import { CreateDishIngredientDto } from "./dto/create-dish-ingredient.dto";
 import { CreateCookingStepDto } from "./dto/create-cooking-step.dto";
 import { CreateDishCategoryDto } from "./dto/create-dish-category.dto";
+import { UpdateDishCategoryDto } from "./dto/update-dish-category.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CurrentUser } from "@/common/decorators";
 import { User } from "../users/entities/user.entity";
@@ -41,6 +43,7 @@ import { User } from "../users/entities/user.entity";
   CreateDishIngredientDto,
   CreateCookingStepDto,
   CreateDishCategoryDto,
+  UpdateDishCategoryDto,
   UpdateDishDto,
 )
 @Controller("dishes")
@@ -182,10 +185,6 @@ export class DishesController {
           type: "string",
           example: "Traditional Italian cuisine",
         },
-        icon_url: {
-          type: "string",
-          example: "https://example.com/icons/italian.png",
-        },
         sort_order: {
           type: "number",
           example: 11,
@@ -204,6 +203,74 @@ export class DishesController {
     @UploadedFile() icon?: Express.Multer.File,
   ) {
     return this.dishesService.createCategory(createDto, icon);
+  }
+
+  @Patch("categories/:id")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(
+    FileInterceptor("icon", {
+      storage: require("multer").diskStorage({
+        destination: "./uploads/categories",
+        filename: (req, file, callback) => {
+          const uniqueName = `${require("uuid").v4()}${require("path").extname(file.originalname)}`;
+          callback(null, uniqueName);
+        },
+      }),
+      fileFilter: (req, file, callback) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp|svg\+xml)$/)) {
+          return callback(new Error("Only image files are allowed"), false);
+        }
+        callback(null, true);
+      },
+      limits: {
+        fileSize: 2 * 1024 * 1024,
+      },
+    }),
+  )
+  @ApiConsumes("multipart/form-data")
+  @ApiOperation({ summary: "Update category with optional icon upload" })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        icon: {
+          type: "string",
+          format: "binary",
+          description: "Category icon image (optional)",
+        },
+        name: {
+          type: "string",
+          example: "Italian",
+        },
+        slug: {
+          type: "string",
+          example: "italian",
+        },
+        description: {
+          type: "string",
+          example: "Traditional Italian cuisine",
+        },
+        sort_order: {
+          type: "number",
+          example: 11,
+        },
+        is_active: {
+          type: "boolean",
+          example: true,
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: "Category updated successfully" })
+  @ApiResponse({ status: 404, description: "Category not found" })
+  async updateCategory(
+    @Param("id") id: string,
+    @Body() updateDto: UpdateDishCategoryDto,
+    @UploadedFile() icon?: Express.Multer.File,
+  ) {
+    return this.dishesService.updateCategory(id, updateDto, icon);
   }
 
   @Get("my")

@@ -13,6 +13,7 @@ import { DietTag } from "../diet-tags/entities/diet-tag.entity";
 import { CreateDishDto } from "./dto/create-dish.dto";
 import { UpdateDishDto } from "./dto/update-dish.dto";
 import { CreateDishCategoryDto } from "./dto/create-dish-category.dto";
+import { UpdateDishCategoryDto } from "./dto/update-dish-category.dto";
 
 @Injectable()
 export class DishesService {
@@ -289,10 +290,31 @@ export class DishesService {
   ) {
     const category = this.categoryRepository.create({
       ...createDto,
-      icon_url: icon
-        ? `/uploads/categories/${icon.filename}`
-        : createDto.icon_url,
+      icon_url: icon ? `/uploads/categories/${icon.filename}` : null,
     });
+    return this.categoryRepository.save(category);
+  }
+
+  async updateCategory(
+    id: string,
+    updateDto: UpdateDishCategoryDto,
+    icon?: Express.Multer.File,
+  ) {
+    const category = await this.categoryRepository.findOne({
+      where: { id },
+    });
+
+    if (!category) {
+      throw new NotFoundException("Category not found");
+    }
+
+    Object.assign(category, updateDto);
+
+    // Update icon if new one is provided
+    if (icon) {
+      category.icon_url = `/uploads/categories/${icon.filename}`;
+    }
+
     return this.categoryRepository.save(category);
   }
 
