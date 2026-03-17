@@ -34,6 +34,7 @@ import { CreateCookingStepDto } from "./dto/create-cooking-step.dto";
 import { CreateDishCategoryDto } from "./dto/create-dish-category.dto";
 import { UpdateDishCategoryDto } from "./dto/update-dish-category.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { OptionalJwtAuthGuard } from "../auth/guards/optional-jwt-auth.guard";
 import { CurrentUser } from "@/common/decorators";
 import { User } from "../users/entities/user.entity";
 
@@ -51,6 +52,7 @@ export class DishesController {
   constructor(private readonly dishesService: DishesService) {}
 
   @Get()
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: "Get all dishes or search dishes" })
   @ApiQuery({
     name: "q",
@@ -336,6 +338,7 @@ export class DishesController {
   }
 
   @Get(":id")
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: "Get dish by ID" })
   @ApiResponse({ status: 200, description: "Dish retrieved" })
   @ApiResponse({ status: 404, description: "Dish not found" })
