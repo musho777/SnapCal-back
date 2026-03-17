@@ -308,7 +308,14 @@ export class DishesService {
       throw new NotFoundException("Category not found");
     }
 
-    Object.assign(category, updateDto);
+    // Only update fields that have non-empty values
+    Object.keys(updateDto).forEach((key) => {
+      const value = updateDto[key];
+      // Only update if value is not empty string, null, or undefined
+      if (value !== "" && value !== null && value !== undefined) {
+        category[key] = value;
+      }
+    });
 
     // Update icon if new one is provided
     if (icon) {
