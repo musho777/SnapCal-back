@@ -61,8 +61,18 @@ export class DishesController {
     name: "dish_type",
     required: false,
     type: String,
-    description: "Filter by dish type (breakfast, lunch, dinner, snack, dessert, appetizer)",
+    description:
+      "Filter by dish type (breakfast, lunch, dinner, snack, dessert, appetizer)",
     enum: ["breakfast", "lunch", "dinner", "snack", "dessert", "appetizer"],
+  })
+  @ApiQuery({
+    name: "category_ids",
+    required: false,
+    type: [String],
+    description:
+      "Filter by category IDs (can provide multiple, comma-separated)",
+    example:
+      "10000006-0000-4000-8000-000000000006,10000007-0000-4000-8000-000000000007",
   })
   @ApiResponse({ status: 200, description: "Dishes retrieved" })
   async findAll(
@@ -70,9 +80,17 @@ export class DishesController {
     @Query("limit") limit?: string,
     @Query("offset") offset?: string,
     @Query("dish_type") dishType?: string,
+    @Query("category_ids") categoryIds?: string,
   ) {
     const numLimit = limit ? parseInt(limit, 10) : undefined;
     const numOffset = offset ? parseInt(offset, 10) : undefined;
+
+    let categoryIdsArray: string[] | undefined;
+    if (categoryIds) {
+      categoryIdsArray = Array.isArray(categoryIds)
+        ? categoryIds
+        : categoryIds.split(",").map((id) => id.trim());
+    }
 
     // If query parameter is provided, search dishes
     if (query) {
@@ -81,18 +99,39 @@ export class DishesController {
         numLimit,
         numOffset,
         dishType,
+        categoryIdsArray,
       );
     }
 
     // Otherwise, return all dishes with pagination
-    return this.dishesService.findAll(numLimit, numOffset, dishType);
+    return this.dishesService.findAll(
+      numLimit,
+      numOffset,
+      dishType,
+      categoryIdsArray,
+    );
   }
 
   @Get("categories")
   @ApiOperation({ summary: "Get all categories" })
+  @ApiQuery({
+    name: "q",
+    required: false,
+    type: String,
+    description: "Search query for category name or description",
+  })
+  @ApiQuery({ name: "limit", required: false, type: Number })
+  @ApiQuery({ name: "offset", required: false, type: Number })
   @ApiResponse({ status: 200, description: "Categories retrieved" })
-  async getCategories() {
-    return this.dishesService.getCategories();
+  async getCategories(
+    @Query("q") query?: string,
+    @Query("limit") limit?: string,
+    @Query("offset") offset?: string,
+  ) {
+    const numLimit = limit ? parseInt(limit, 10) : undefined;
+    const numOffset = offset ? parseInt(offset, 10) : undefined;
+
+    return this.dishesService.getCategories(query, numLimit, numOffset);
   }
 
   @Post("categories")
@@ -183,8 +222,18 @@ export class DishesController {
     name: "dish_type",
     required: false,
     type: String,
-    description: "Filter by dish type (breakfast, lunch, dinner, snack, dessert, appetizer)",
+    description:
+      "Filter by dish type (breakfast, lunch, dinner, snack, dessert, appetizer)",
     enum: ["breakfast", "lunch", "dinner", "snack", "dessert", "appetizer"],
+  })
+  @ApiQuery({
+    name: "category_ids",
+    required: false,
+    type: [String],
+    description:
+      "Filter by category IDs (can provide multiple, comma-separated)",
+    example:
+      "10000006-0000-4000-8000-000000000006,10000007-0000-4000-8000-000000000007",
   })
   @ApiResponse({ status: 200, description: "User dishes retrieved" })
   async findMyDishes(
@@ -193,9 +242,18 @@ export class DishesController {
     @Query("limit") limit?: string,
     @Query("offset") offset?: string,
     @Query("dish_type") dishType?: string,
+    @Query("category_ids") categoryIds?: string,
   ) {
     const numLimit = limit ? parseInt(limit, 10) : undefined;
     const numOffset = offset ? parseInt(offset, 10) : undefined;
+
+    // Parse category IDs (can be comma-separated string or array)
+    let categoryIdsArray: string[] | undefined;
+    if (categoryIds) {
+      categoryIdsArray = Array.isArray(categoryIds)
+        ? categoryIds
+        : categoryIds.split(",").map((id) => id.trim());
+    }
 
     return this.dishesService.findMyDishes(
       user.id,
@@ -203,6 +261,7 @@ export class DishesController {
       numOffset,
       query,
       dishType,
+      categoryIdsArray,
     );
   }
 

@@ -33,6 +33,7 @@ export class DishesService {
     limit: number = 50,
     offset: number = 0,
     dishType?: string,
+    categoryIds?: string[],
   ) {
     const queryBuilder = this.dishRepository
       .createQueryBuilder("dish")
@@ -46,7 +47,16 @@ export class DishesService {
 
     // Add dish_type filter if provided
     if (dishType) {
-      queryBuilder.andWhere("dish.dish_type IS NOT NULL AND :dishType = ANY(dish.dish_type)", { dishType });
+      queryBuilder.andWhere(
+        "dish.dish_type IS NOT NULL AND :dishType = ANY(dish.dish_type)",
+        { dishType },
+      );
+    }
+
+    if (categoryIds && categoryIds.length > 0) {
+      queryBuilder.andWhere("categories.id IN (:...categoryIds)", {
+        categoryIds,
+      });
     }
 
     const [dishes, total] = await queryBuilder.getManyAndCount();
@@ -77,7 +87,13 @@ export class DishesService {
     createDto: CreateDishDto,
     image?: Express.Multer.File,
   ) {
-    const { category_ids, diet_tag_ids, ingredients, cooking_steps, ...dishData } = createDto;
+    const {
+      category_ids,
+      diet_tag_ids,
+      ingredients,
+      cooking_steps,
+      ...dishData
+    } = createDto;
     const dish = this.dishRepository.create({
       ...dishData,
       created_by: userId,
@@ -151,7 +167,13 @@ export class DishesService {
       throw new ForbiddenException("You can only update your own dishes");
     }
 
-    const { category_ids, diet_tag_ids, ingredients, cooking_steps, ...dishData } = updateDto;
+    const {
+      category_ids,
+      diet_tag_ids,
+      ingredients,
+      cooking_steps,
+      ...dishData
+    } = updateDto;
 
     Object.assign(dish, dishData);
 
@@ -235,11 +257,30 @@ export class DishesService {
     return { message: "Dish deleted successfully" };
   }
 
-  async getCategories() {
-    return this.categoryRepository.find({
-      where: { is_active: true },
-      order: { sort_order: "ASC" },
-    });
+  async getCategories(query?: string, limit: number = 50, offset: number = 0) {
+    const queryBuilder = this.categoryRepository
+      .createQueryBuilder("category")
+      .where("category.is_active = :isActive", { isActive: true })
+      .orderBy("category.sort_order", "ASC")
+      .take(limit)
+      .skip(offset);
+
+    // Add search query if provided
+    if (query) {
+      queryBuilder.andWhere(
+        "(category.name ILIKE :query OR category.description ILIKE :query)",
+        { query: `%${query}%` },
+      );
+    }
+
+    const [categories, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      categories,
+      total,
+      limit,
+      offset,
+    };
   }
 
   async createCategory(
@@ -260,6 +301,7 @@ export class DishesService {
     limit: number = 20,
     offset: number = 0,
     dishType?: string,
+    categoryIds?: string[],
   ) {
     const queryBuilder = this.dishRepository
       .createQueryBuilder("dish")
@@ -275,7 +317,17 @@ export class DishesService {
 
     // Add dish_type filter if provided
     if (dishType) {
-      queryBuilder.andWhere("dish.dish_type IS NOT NULL AND :dishType = ANY(dish.dish_type)", { dishType });
+      queryBuilder.andWhere(
+        "dish.dish_type IS NOT NULL AND :dishType = ANY(dish.dish_type)",
+        { dishType },
+      );
+    }
+
+    // Add category filter if provided
+    if (categoryIds && categoryIds.length > 0) {
+      queryBuilder.andWhere("categories.id IN (:...categoryIds)", {
+        categoryIds,
+      });
     }
 
     const [dishes, total] = await queryBuilder.getManyAndCount();
@@ -294,6 +346,7 @@ export class DishesService {
     offset: number = 0,
     query?: string,
     dishType?: string,
+    categoryIds?: string[],
   ) {
     const queryBuilder = this.dishRepository
       .createQueryBuilder("dish")
@@ -307,14 +360,27 @@ export class DishesService {
 
     // Add search query if provided
     if (query) {
-      queryBuilder.andWhere("(dish.name ILIKE :query OR dish.description ILIKE :query)", {
-        query: `%${query}%`,
-      });
+      queryBuilder.andWhere(
+        "(dish.name ILIKE :query OR dish.description ILIKE :query)",
+        {
+          query: `%${query}%`,
+        },
+      );
     }
 
     // Add dish_type filter if provided
     if (dishType) {
-      queryBuilder.andWhere("dish.dish_type IS NOT NULL AND :dishType = ANY(dish.dish_type)", { dishType });
+      queryBuilder.andWhere(
+        "dish.dish_type IS NOT NULL AND :dishType = ANY(dish.dish_type)",
+        { dishType },
+      );
+    }
+
+    // Add category filter if provided
+    if (categoryIds && categoryIds.length > 0) {
+      queryBuilder.andWhere("categories.id IN (:...categoryIds)", {
+        categoryIds,
+      });
     }
 
     const [dishes, total] = await queryBuilder.getManyAndCount();
