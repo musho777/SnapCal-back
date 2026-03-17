@@ -38,6 +38,7 @@ export class DishesService {
     offset: number = 0,
     dishType?: string,
     categoryIds?: string[],
+    userId?: string,
   ) {
     const queryBuilder = this.dishRepository
       .createQueryBuilder("dish")
@@ -65,15 +66,20 @@ export class DishesService {
 
     const [dishes, total] = await queryBuilder.getManyAndCount();
 
+    // Add is_saved field if user is authenticated
+    const dishesWithSavedStatus = userId
+      ? await this.addIsSavedField(dishes, userId)
+      : dishes;
+
     return {
-      dishes,
+      dishes: dishesWithSavedStatus,
       total,
       limit,
       offset,
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId?: string) {
     const dish = await this.dishRepository.findOne({
       where: { id, is_active: true },
       relations: ["categories", "diet_tags", "ingredients", "cooking_steps"],
@@ -81,6 +87,12 @@ export class DishesService {
 
     if (!dish) {
       throw new NotFoundException("Dish not found");
+    }
+
+    // Add is_saved field if user is authenticated
+    if (userId) {
+      const is_saved = await this.isSaved(userId, dish.id);
+      return { ...dish, is_saved };
     }
 
     return dish;
@@ -148,7 +160,7 @@ export class DishesService {
     }
 
     // Return dish with relations
-    return this.findOne(dish.id);
+    return this.findOne(dish.id, userId);
   }
 
   async update(
@@ -240,7 +252,7 @@ export class DishesService {
     await this.dishRepository.save(dish);
 
     // Return updated dish with all relations
-    return this.findOne(id);
+    return this.findOne(id, userId);
   }
 
   async delete(id: string, userId: string) {
@@ -334,6 +346,7 @@ export class DishesService {
     offset: number = 0,
     dishType?: string,
     categoryIds?: string[],
+    userId?: string,
   ) {
     const queryBuilder = this.dishRepository
       .createQueryBuilder("dish")
@@ -364,8 +377,13 @@ export class DishesService {
 
     const [dishes, total] = await queryBuilder.getManyAndCount();
 
+    // Add is_saved field if user is authenticated
+    const dishesWithSavedStatus = userId
+      ? await this.addIsSavedField(dishes, userId)
+      : dishes;
+
     return {
-      dishes,
+      dishes: dishesWithSavedStatus,
       total,
       limit,
       offset,
@@ -417,8 +435,11 @@ export class DishesService {
 
     const [dishes, total] = await queryBuilder.getManyAndCount();
 
+    // Add is_saved field
+    const dishesWithSavedStatus = await this.addIsSavedField(dishes, userId);
+
     return {
-      dishes,
+      dishes: dishesWithSavedStatus,
       total,
       limit,
       offset,
@@ -524,10 +545,11 @@ export class DishesService {
 
     const [savedDishes, total] = await queryBuilder.getManyAndCount();
 
-    // Extract the dishes from the saved dishes
+    // Extract the dishes from the saved dishes and add is_saved field
     const dishes = savedDishes.map((savedDish) => ({
       ...savedDish.dish,
       saved_at: savedDish.saved_at,
+      is_saved: true, // All dishes in saved list are saved
     }));
 
     return {
@@ -544,5 +566,33 @@ export class DishesService {
     });
 
     return !!savedDish;
+  }
+
+  /**
+   * Helper method to add is_saved field to dishes
+   */
+  private async addIsSavedField(dishes: Dish[], userId: string) {
+    if (!dishes || dishes.length === 0) {
+      return dishes;
+    }
+
+    const dishIds = dishes.map((dish) => dish.id);
+
+    // Get all saved dishes for this user in one query
+    const savedDishes = await this.savedDishRepository.find({
+      where: {
+        user_id: userId,
+        dish_id: In(dishIds),
+      },
+    });
+
+    // Create a Set of saved dish IDs for quick lookup
+    const savedDishIds = new Set(savedDishes.map((sd) => sd.dish_id));
+
+    // Add is_saved field to each dish
+    return dishes.map((dish) => ({
+      ...dish,
+      is_saved: savedDishIds.has(dish.id),
+    }));
   }
 }

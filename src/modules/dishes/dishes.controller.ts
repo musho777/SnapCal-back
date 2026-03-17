@@ -84,6 +84,7 @@ export class DishesController {
     @Query("offset") offset?: string,
     @Query("dish_type") dishType?: string,
     @Query("category_ids") categoryIds?: string,
+    @CurrentUser() user?: User,
   ) {
     const numLimit = limit ? parseInt(limit, 10) : undefined;
     const numOffset = offset ? parseInt(offset, 10) : undefined;
@@ -103,6 +104,7 @@ export class DishesController {
         numOffset,
         dishType,
         categoryIdsArray,
+        user?.id,
       );
     }
 
@@ -112,6 +114,7 @@ export class DishesController {
       numOffset,
       dishType,
       categoryIdsArray,
+      user?.id,
     );
   }
 
@@ -336,8 +339,8 @@ export class DishesController {
   @ApiOperation({ summary: "Get dish by ID" })
   @ApiResponse({ status: 200, description: "Dish retrieved" })
   @ApiResponse({ status: 404, description: "Dish not found" })
-  async findOne(@Param("id") id: string) {
-    return this.dishesService.findOne(id);
+  async findOne(@Param("id") id: string, @CurrentUser() user?: User) {
+    return this.dishesService.findOne(id, user?.id);
   }
 
   @Post()
