@@ -77,10 +77,10 @@ export class LogsController {
     return this.logsService.updateDailyLog(user.id, date, updateDto);
   }
 
-  @Post('daily/:date/meals/:mealId/burned-dishes/:dishId')
+  @Post('daily/:date/meal-dishes/:mealDishId/toggle-burned')
   @ApiOperation({
     summary: 'Toggle dish calories in calories_burned',
-    description: 'Toggles a dish\'s calories in the daily log calories_burned field. If already added from this meal, removes it. If not added, adds it.'
+    description: 'Toggles a specific meal dish instance\'s calories in the daily log calories_burned field. If already added, removes it. If not added, adds it.'
   })
   @ApiResponse({
     status: 200,
@@ -89,10 +89,9 @@ export class LogsController {
   async toggleDishInCaloriesBurned(
     @CurrentUser() user: User,
     @Param('date') date: string,
-    @Param('mealId') mealId: string,
-    @Param('dishId') dishId: string,
+    @Param('mealDishId') mealDishId: string,
   ) {
-    return this.logsService.toggleDishInCaloriesBurned(user.id, date, dishId, mealId);
+    return this.logsService.toggleDishInCaloriesBurned(user.id, date, mealDishId);
   }
 
   @Delete('burned-dishes/:burnedDishId')

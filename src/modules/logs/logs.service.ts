@@ -5,6 +5,7 @@ import { UserDailyLog } from "./entities/user-daily-log.entity";
 import { BurnedDish } from "./entities/burned-dish.entity";
 import { Dish } from "../dishes/entities/dish.entity";
 import { Meal } from "../meals/entities/meal.entity";
+import { MealDish } from "../meals/entities/meal-dish.entity";
 import { UserSettings } from "../settings/entities/user-settings.entity";
 import { CreateDailyLogDto } from "./dto/create-daily-log.dto";
 import { UpdateDailyLogDto } from "./dto/update-daily-log.dto";
@@ -18,6 +19,8 @@ export class LogsService {
     private burnedDishRepository: Repository<BurnedDish>,
     @InjectRepository(Dish)
     private dishRepository: Repository<Dish>,
+    @InjectRepository(MealDish)
+    private mealDishRepository: Repository<MealDish>,
     @InjectRepository(UserSettings)
     private settingsRepository: Repository<UserSettings>,
   ) {}
@@ -230,18 +233,16 @@ export class LogsService {
   async toggleDishInCaloriesBurned(
     userId: string,
     date: string,
-    dishId: string,
-    mealId: string,
+    mealDishId: string,
   ) {
     const logDate = new Date(date);
     const dailyLog = await this.findOrCreateDailyLog(userId, logDate);
 
-    // Check if this dish from this specific meal is already added
+    // Check if this specific meal dish instance is already added
     const existingBurnedDish = await this.burnedDishRepository.findOne({
       where: {
         daily_log_id: dailyLog.id,
-        dish_id: dishId,
-        meal_id: mealId,
+        meal_dish_id: mealDishId,
       },
     });
 
@@ -265,26 +266,28 @@ export class LogsService {
     }
 
     // If not exists, ADD it
-    const dish = await this.dishRepository.findOne({
-      where: { id: dishId },
+    const mealDish = await this.mealDishRepository.findOne({
+      where: { id: mealDishId },
+      relations: ["dish", "meal"],
     });
 
-    if (!dish) {
-      throw new NotFoundException("Dish not found");
+    if (!mealDish) {
+      throw new NotFoundException("Meal dish not found");
     }
 
     // Create burned dish record
     const burnedDish = this.burnedDishRepository.create({
       daily_log_id: dailyLog.id,
-      dish_id: dishId,
-      meal_id: mealId,
-      calories_burned: dish.calories,
+      dish_id: mealDish.dish_id,
+      meal_id: mealDish.meal_id,
+      meal_dish_id: mealDishId,
+      calories_burned: mealDish.calories_at_time,
     });
 
     await this.burnedDishRepository.save(burnedDish);
 
     // Update daily log calories_burned
-    dailyLog.calories_burned = (dailyLog.calories_burned || 0) + dish.calories;
+    dailyLog.calories_burned = (dailyLog.calories_burned || 0) + mealDish.calories_at_time;
     await this.logRepository.save(dailyLog);
 
     return {

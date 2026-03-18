@@ -9,6 +9,7 @@ import {
 import { UserDailyLog } from './user-daily-log.entity';
 import { Dish } from '../../dishes/entities/dish.entity';
 import { Meal } from '../../meals/entities/meal.entity';
+import { MealDish } from '../../meals/entities/meal-dish.entity';
 
 @Entity('burned_dishes')
 export class BurnedDish {
@@ -23,6 +24,9 @@ export class BurnedDish {
 
   @Column({ type: 'uuid', nullable: true })
   meal_id: string | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  meal_dish_id: string | null;
 
   @Column({ type: 'int' })
   calories_burned: number;
@@ -42,4 +46,8 @@ export class BurnedDish {
   @ManyToOne(() => Meal)
   @JoinColumn({ name: 'meal_id' })
   meal: Meal;
+
+  @ManyToOne(() => MealDish)
+  @JoinColumn({ name: 'meal_dish_id' })
+  meal_dish: MealDish;
 }

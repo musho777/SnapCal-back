@@ -79,13 +79,14 @@ export class DailyLogResponseDto {
 
   @ApiProperty({
     type: 'array',
-    description: 'List of dishes that contributed to calories_burned, tracked per meal',
+    description: 'List of dishes that contributed to calories_burned, tracked per meal dish instance',
     required: false,
     example: [
       {
         id: 'uuid',
         dish_id: 'uuid',
         meal_id: 'uuid',
+        meal_dish_id: 'uuid',
         calories_burned: 500,
         created_at: '2026-02-27T10:00:00Z',
         dish: {
