@@ -275,19 +275,22 @@ export class LogsService {
       throw new NotFoundException("Meal dish not found");
     }
 
+    // Calculate total calories including servings
+    const totalCalories = Math.round(mealDish.calories_at_time * Number(mealDish.servings));
+
     // Create burned dish record
     const burnedDish = this.burnedDishRepository.create({
       daily_log_id: dailyLog.id,
       dish_id: mealDish.dish_id,
       meal_id: mealDish.meal_id,
       meal_dish_id: mealDishId,
-      calories_burned: mealDish.calories_at_time,
+      calories_burned: totalCalories,
     });
 
     await this.burnedDishRepository.save(burnedDish);
 
     // Update daily log calories_burned
-    dailyLog.calories_burned = (dailyLog.calories_burned || 0) + mealDish.calories_at_time;
+    dailyLog.calories_burned = (dailyLog.calories_burned || 0) + totalCalories;
     await this.logRepository.save(dailyLog);
 
     return {
