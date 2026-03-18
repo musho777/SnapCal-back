@@ -101,19 +101,25 @@ export class LogsService {
     return log;
   }
 
-  async getLogsByDateRange(userId: string, startDate: string, endDate: string) {
-    const logs = await this.logRepository
+  async getLogsByDateRange(userId: string, startDate?: string, endDate?: string) {
+    const queryBuilder = this.logRepository
       .createQueryBuilder("log")
       .leftJoinAndSelect("log.meals", "meals")
       .leftJoinAndSelect("meals.meal_dishes", "meal_dishes")
       .leftJoinAndSelect("meal_dishes.dish", "dish")
       .leftJoinAndSelect("log.burned_dishes", "burned_dishes")
       .leftJoinAndSelect("burned_dishes.dish", "burned_dish_info")
-      .where("log.user_id = :userId", { userId })
-      .andWhere("log.log_date BETWEEN :startDate AND :endDate", {
+      .where("log.user_id = :userId", { userId });
+
+    // Only apply date range filter if both dates are provided
+    if (startDate && endDate) {
+      queryBuilder.andWhere("log.log_date BETWEEN :startDate AND :endDate", {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
-      })
+      });
+    }
+
+    const logs = await queryBuilder
       .orderBy("log.log_date", "DESC")
       .getMany();
 

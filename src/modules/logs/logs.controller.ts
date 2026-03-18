@@ -43,9 +43,9 @@ export class LogsController {
   }
 
   @Get('range')
-  @ApiOperation({ summary: 'Get logs by date range' })
-  @ApiQuery({ name: 'start_date', type: String, example: '2026-02-20' })
-  @ApiQuery({ name: 'end_date', type: String, example: '2026-02-27' })
+  @ApiOperation({ summary: 'Get logs by date range or all logs if no dates provided' })
+  @ApiQuery({ name: 'start_date', type: String, example: '2026-02-20', required: false })
+  @ApiQuery({ name: 'end_date', type: String, example: '2026-02-27', required: false })
   @ApiResponse({
     status: 200,
     description: 'Logs retrieved with calculated calories consumed',
@@ -53,8 +53,8 @@ export class LogsController {
   })
   async getLogsByRange(
     @CurrentUser() user: User,
-    @Query('start_date') startDate: string,
-    @Query('end_date') endDate: string,
+    @Query('start_date') startDate?: string,
+    @Query('end_date') endDate?: string,
   ) {
     return this.logsService.getLogsByDateRange(user.id, startDate, endDate);
   }
