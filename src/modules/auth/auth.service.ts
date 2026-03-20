@@ -245,6 +245,10 @@ export class AuthService {
       relations: ['profile', 'settings', 'diet_preferences'],
     });
 
+    if (!fullUser) {
+      throw new UnauthorizedException('User not found');
+    }
+
     return {
       access_token,
       refresh_token,
@@ -390,6 +394,10 @@ export class AuthService {
       where: { id: user.id },
       relations: ['profile', 'settings', 'diet_preferences'],
     });
+
+    if (!fullUser) {
+      throw new UnauthorizedException('User not found');
+    }
 
     return {
       access_token,
