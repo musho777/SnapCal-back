@@ -7,5 +7,9 @@ export interface AuthResponse {
     id: string;
     email: string | null;
     is_guest: boolean;
+    auth_provider?: string;
+    profile?: any;
+    settings?: any;
+    diet_preferences?: any[];
   };
 }

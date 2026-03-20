@@ -222,7 +222,7 @@ export class AuthService {
     }
   }
 
-  private generateTokens(user: User): AuthResponse {
+  private async generateTokens(user: User): Promise<AuthResponse> {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
@@ -239,15 +239,25 @@ export class AuthService {
       expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION'),
     });
 
+    // Fetch full user profile data including relations
+    const fullUser = await this.userRepository.findOne({
+      where: { id: user.id },
+      relations: ['profile', 'settings', 'diet_preferences'],
+    });
+
     return {
       access_token,
       refresh_token,
       token_type: 'Bearer',
       expires_in: 604800, // 7 days in seconds
       user: {
-        id: user.id,
-        email: user.email,
-        is_guest: user.is_guest,
+        id: fullUser.id,
+        email: fullUser.email,
+        is_guest: fullUser.is_guest,
+        auth_provider: fullUser.auth_provider,
+        profile: fullUser.profile,
+        settings: fullUser.settings,
+        diet_preferences: fullUser.diet_preferences,
       },
     };
   }
@@ -375,12 +385,27 @@ export class AuthService {
       expiresIn: this.configService.get<string>('JWT_EXPIRATION'),
     });
 
+    // Fetch full user profile data including relations
+    const fullUser = await this.userRepository.findOne({
+      where: { id: user.id },
+      relations: ['profile', 'settings', 'diet_preferences'],
+    });
+
     return {
       access_token,
       guest_token,
       token_type: 'Bearer',
       user_id: user.id,
       expires_at,
+      user: {
+        id: fullUser.id,
+        email: fullUser.email,
+        is_guest: fullUser.is_guest,
+        auth_provider: fullUser.auth_provider,
+        profile: fullUser.profile,
+        settings: fullUser.settings,
+        diet_preferences: fullUser.diet_preferences,
+      },
     };
   }
 
