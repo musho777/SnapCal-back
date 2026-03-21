@@ -609,9 +609,10 @@ export class DishesService {
       .where("dish.is_active = :isActive", { isActive: true })
       .andWhere("dish.is_public = :isPublic", { isPublic: true })
       .andWhere("diet_tags.id IN (:...dietTagIds)", { dietTagIds })
-      .distinct(true) // ensure no duplicates if multiple diet tags match
-      .orderBy("RANDOM()") // randomize results at DB level
-      .limit(limit) // only fetch 10 dishes
+      .distinctOn(["dish.id"])
+      .orderBy("dish.id")
+      .addOrderBy("RANDOM()")
+      .limit(limit)
       .getMany();
 
     const dishesWithSavedStatus = await this.addIsSavedField(
