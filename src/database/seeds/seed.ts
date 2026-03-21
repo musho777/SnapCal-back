@@ -21,7 +21,6 @@ async function seed() {
       'user_diet_preferences',
       'dish_diet_tags',
       'diet_tags',
-      'diet_preferences',
       'dish_cooking_steps',
       'dish_ingredients',
       'dish_category_mapping',

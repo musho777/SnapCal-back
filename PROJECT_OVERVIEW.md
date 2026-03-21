@@ -32,7 +32,7 @@ nutrition-tracker-api/
 │   │   ├── meals/                  # Meal tracking with processing algorithm
 │   │   ├── logs/                   # Daily logs with snapshot system
 │   │   ├── ratings/                # Dish rating system
-│   │   └── diet-preferences/       # Dietary preferences
+│   │   └── diet-tags/              # Dietary tags (vegan, vegetarian, etc.)
 │   ├── common/                     # Shared resources
 │   │   ├── enums/                  # TypeScript enums
 │   │   ├── decorators/             # Custom decorators
@@ -146,12 +146,13 @@ When user adds dish to meal:
 
 **Files**: `src/modules/ratings/*`
 
-### 9. Diet Preferences
-- Dietary restrictions tracking
-- Allergen management
-- Custom preference types
+### 9. Diet Tags
+- Dietary tags for dishes (vegan, vegetarian, gluten-free, etc.)
+- User dietary preferences (many-to-many with diet tags)
+- Tag dishes with multiple dietary attributes
+- Users can select multiple dietary preferences
 
-**Files**: `src/modules/diet-preferences/*`
+**Files**: `src/modules/diet-tags/*`
 
 ### 10. Background Jobs
 - Daily guest session cleanup (2 AM)
@@ -180,7 +181,9 @@ When user adds dish to meal:
 13. **dish_cooking_steps** - Cooking instructions
 14. **dish_ratings** - User ratings
 15. **body_measurements** - Weight/height tracking
-16. **diet_preferences** - Dietary preferences
+16. **diet_tags** - Dietary tags (vegan, vegetarian, etc.)
+17. **dish_diet_tags** - Dish-diet tag many-to-many junction
+18. **user_diet_preferences** - User-diet tag many-to-many junction
 
 ### Enums
 
@@ -289,11 +292,12 @@ PUT    /api/v1/ratings/:id
 DELETE /api/v1/ratings/:id
 ```
 
-### Diet Preferences
+### Diet Tags
 ```
-GET    /api/v1/diet-preferences
-POST   /api/v1/diet-preferences
-DELETE /api/v1/diet-preferences/:id
+GET    /api/v1/diet-tags
+POST   /api/v1/diet-tags
+PUT    /api/v1/diet-tags/:id
+DELETE /api/v1/diet-tags/:id
 ```
 
 ## Key Algorithms Explained

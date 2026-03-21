@@ -36,7 +36,7 @@ Following **Modular Clean Architecture** with these modules:
 - `meals` - Meal tracking (breakfast, lunch, dinner)
 - `settings` - User settings and calorie targets
 - `ratings` - Dish ratings
-- `diet-preferences` - Dietary preferences
+- `diet-tags` - Dietary tags for dishes and user preferences
 
 ## Getting Started
 
@@ -143,7 +143,9 @@ For detailed Docker documentation, see [DOCKER.md](DOCKER.md)
 - **dish_cooking_steps** - Cooking instructions
 - **dish_ratings** - User ratings for dishes
 - **body_measurements** - Weight and height tracking
-- **diet_preferences** - Dietary preferences
+- **diet_tags** - Dietary tags (vegan, vegetarian, etc.)
+- **dish_diet_tags** - Many-to-many dish-diet tag relation
+- **user_diet_preferences** - Many-to-many user-diet tag relation
 
 ## Key Features Explained
 

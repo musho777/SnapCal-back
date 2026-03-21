@@ -300,25 +300,11 @@ export class InitialMigration1700000000000 implements MigrationInterface {
       CREATE INDEX "idx_dish_ratings_dish" ON "dish_ratings"("dish_id");
     `);
 
-    // Diet preferences table
-    await queryRunner.query(`
-      CREATE TABLE "diet_preferences" (
-        "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-        "user_id" uuid NOT NULL,
-        "preference_type" varchar(100) NOT NULL,
-        "preference_value" varchar(255) NOT NULL,
-        "is_active" boolean DEFAULT true,
-        "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE
-      );
-    `);
-
     // Enable UUID extension
     await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE IF EXISTS "diet_preferences";`);
     await queryRunner.query(`DROP TABLE IF EXISTS "dish_ratings";`);
     await queryRunner.query(`DROP TABLE IF EXISTS "meal_dishes";`);
     await queryRunner.query(`DROP TABLE IF EXISTS "meals";`);
