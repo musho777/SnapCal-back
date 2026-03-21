@@ -278,6 +278,32 @@ export class DishesController {
     return this.dishesService.updateCategory(id, updateDto, icon);
   }
 
+  @Get("recommended")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      "Get random recommended dishes based on user's diet tag preferences (vegan, vegetarian, etc.)",
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    type: Number,
+    description: "Number of random dishes to return",
+    example: 10,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Random recommended dishes retrieved",
+  })
+  async getRecommendedDishes(
+    @CurrentUser() user: User,
+    @Query("limit") limit?: string,
+  ) {
+    const numLimit = limit ? parseInt(limit, 10) : 10;
+    return this.dishesService.getRecommendedDishes(user.id, numLimit);
+  }
+
   @Get("my")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

@@ -8,6 +8,7 @@ import { DishIngredient } from './entities/dish-ingredient.entity';
 import { DishCookingStep } from './entities/dish-cooking-step.entity';
 import { SavedDish } from './entities/saved-dish.entity';
 import { DietTag } from '../diet-tags/entities/diet-tag.entity';
+import { User } from '../users/entities/user.entity';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { DietTag } from '../diet-tags/entities/diet-tag.entity';
       DishCookingStep,
       SavedDish,
       DietTag,
+      User,
     ]),
   ],
   controllers: [DishesController],

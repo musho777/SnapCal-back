@@ -11,6 +11,7 @@ import { DishIngredient } from "./entities/dish-ingredient.entity";
 import { DishCookingStep } from "./entities/dish-cooking-step.entity";
 import { DietTag } from "../diet-tags/entities/diet-tag.entity";
 import { SavedDish } from "./entities/saved-dish.entity";
+import { User } from "../users/entities/user.entity";
 import { CreateDishDto } from "./dto/create-dish.dto";
 import { UpdateDishDto } from "./dto/update-dish.dto";
 import { CreateDishCategoryDto } from "./dto/create-dish-category.dto";
@@ -31,6 +32,8 @@ export class DishesService {
     private dietTagRepository: Repository<DietTag>,
     @InjectRepository(SavedDish)
     private savedDishRepository: Repository<SavedDish>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
   async findAll(
@@ -569,6 +572,62 @@ export class DishesService {
     });
 
     return !!savedDish;
+  }
+
+  /**
+   * Get random recommended dishes based on user's diet tag preferences
+   */
+  async getRecommendedDishes(userId: string, limit: number = 10) {
+    // Step 1: Get user with their diet preferences
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ["diet_preferences"],
+    });
+
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    // If user has no diet preferences, return empty result
+    if (!user.diet_preferences || user.diet_preferences.length === 0) {
+      return {
+        dishes: [],
+        total: 0,
+        limit,
+        diet_tags_used: [],
+      };
+    }
+
+    // Step 2: Extract diet tag IDs from user preferences
+    const dietTagIds = user.diet_preferences.map((tag) => tag.id);
+
+    // Step 3: Find all public dishes that have at least one of those diet tags
+    const recommendedDishes = await this.dishRepository
+      .createQueryBuilder("dish")
+      .innerJoinAndSelect("dish.diet_tags", "diet_tags")
+      .leftJoinAndSelect("dish.categories", "categories")
+      .where("dish.is_active = :isActive", { isActive: true })
+      .andWhere("dish.is_public = :isPublic", { isPublic: true })
+      .andWhere("diet_tags.id IN (:...dietTagIds)", { dietTagIds })
+      .distinct(true) // ensure no duplicates if multiple diet tags match
+      .orderBy("RANDOM()") // randomize results at DB level
+      .limit(limit) // only fetch 10 dishes
+      .getMany();
+
+    const dishesWithSavedStatus = await this.addIsSavedField(
+      recommendedDishes,
+      userId,
+    );
+
+    return {
+      dishes: dishesWithSavedStatus,
+      total: recommendedDishes.length,
+      limit,
+      diet_tags_used: user.diet_preferences.map((tag) => ({
+        id: tag.id,
+        name: tag.name,
+      })),
+    };
   }
 
   /**
