@@ -113,6 +113,11 @@ export class CreateDishDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return value;
+  })
   is_public?: boolean;
 
   @ApiProperty({ required: false, type: [String] })
